@@ -1,0 +1,30 @@
+.app {
+  min-height: 100vh;
+  background-color: rgb(183, 191, 198);
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.chart-card {
+  background: white;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+  overflow: hidden;
+}
+
+/* If the chart element wants to fill the card, let it. */
+.chart-card > * {
+  max-width: 100%;
+  max-height: 100%;
+}
