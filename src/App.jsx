@@ -2,6 +2,7 @@ import './App.css'
 import { data } from "./energy.js"
 import ResponsiveBarPlot from "./BarPlot.jsx"
 import ResponsiveDonutPlot from './DonutPlot.jsx';
+import ResponsiveAreaPlot from './StackedAreaPlot.jsx';
 import { schemeTableau10 } from "d3";
 
 /** Mix columns from `energy.js` (excludes country, year, primary_energy). */
@@ -28,6 +29,9 @@ const countryData = data.filter(d => d.country != 'World')
   .map(d => d.country === 'United Arab Emirates' ? { ...d, country: 'Un. Arab Emirates' } : d)
 const yearlyData = countryData.filter(d => d.year === year)
 
+// Full time series for stacked area (one row per country × year).
+const worldTimeSeries = data.filter((d) => d.country === 'World')
+
 // Donut: one row for World in `year` — mix by source (same keys as bar palette).
 const worldRow = data.find((d) => d.country === 'World' && d.year === year) ?? null
 const donutData = ENERGY_SOURCE_KEYS.map((source) => ({
@@ -53,6 +57,13 @@ function App() {
               data={donutData}
               year={year}
               country='World'
+              sourceColors={energySourceToColor}
+            />
+          </div>
+          <div className='chart-card'>
+            <ResponsiveAreaPlot
+              countryData={worldTimeSeries}
+              country="World"
               sourceColors={energySourceToColor}
             />
           </div>

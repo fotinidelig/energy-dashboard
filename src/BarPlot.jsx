@@ -29,10 +29,22 @@ export const BarPlot = ({
             total
         }
     });
+
     const sortedData = useMemo(() => {
       return [...totalData].sort((a, b) => (b[source] ?? 0) - (a[source] ?? 0));
     }, [totalData]);
-  
+    
+    // Get energy sources sorted by source with max. energy -> source with min. energy
+    const dataBySource = useMemo(() => {
+      const ranked = Object.keys(sourceColors ?? {})
+        .map((s) => ({ s, total: d3.sum(sortedData, (d) => d[s] ?? 0) }))
+        .sort((a, b) => b.total - a.total);
+      return Object.fromEntries(
+        ranked.map(({ s }) => [s, sortedData.map((d) => d[s] ?? 0)]),
+      );
+    }, [sourceColors, sortedData]);
+    // ToDo: use to construct stacked bar plot
+
     // 2) Chart dimensions and margins.
     const margin = { top: 15, right: 50, bottom: 15, left: 120 };
     const innerWidth = Math.max(0, (width ?? 0) - margin.left - margin.right);

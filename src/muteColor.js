@@ -18,7 +18,7 @@ function isStringRecord(x) {
  * @param {string} [toward]
  * @param {number} [t]
  */
-export function muteColor(colorOrPalette, toward = '#c5ccd4', t = 0.42) {
+export function muteColor(colorOrPalette, toward = '#c5ccd4', t = 0.7) {
   if (isStringRecord(colorOrPalette)) {
     return Object.fromEntries(
       Object.entries(colorOrPalette).map(([key, c]) => [
