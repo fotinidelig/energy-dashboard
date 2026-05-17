@@ -45,26 +45,19 @@ function App() {
     <div className="app">
       <main className="container">
         <h1>Energy dashboard</h1>
-        <div id='dashboard'>
-          <div className='chart-card'>
-            <ResponsiveBarPlot
-              data={yearlyData}
-              country='None'
-              source='oil'
-              sourceColors={energySourceToColor}
-            />
-          </div><div className='chart-card'>
-            <ResponsiveDonutPlot
-              data={donutData}
-              year={year}
-              country='World'
-              sourceColors={energySourceToColor}
-            />
-          </div>
+        <div className="dashboard">
           <div className='chart-card'>
             <ResponsiveAreaPlot
               countryData={worldTimeSeries}
               country="World"
+              sourceColors={energySourceToColor}
+            />
+          </div>
+          <div className='chart-card'>
+            <ResponsiveDonutPlot
+              data={donutData}
+              year={year}
+              country='World'
               sourceColors={energySourceToColor}
             />
           </div>
@@ -75,6 +68,14 @@ function App() {
               sourceColors={energySourceToColor}
             />
           </div>
+            <div className='chart-card'>
+              <ResponsiveBarPlot
+                data={yearlyData}
+                country='None'
+                source='oil'
+                sourceColors={energySourceToColor}
+              />
+            </div>
         </div>
       </main>
     </div>

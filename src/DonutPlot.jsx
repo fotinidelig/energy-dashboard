@@ -152,7 +152,7 @@ export const ResponsiveDonutPlot = ( props ) => {
     const chartRef = useRef(null);
     const chartSize = useDimensions(chartRef);
     return (
-      <div ref={chartRef} style={{ width: "100%", height: 300 }}>
+      <div ref={chartRef} style={{ width: "100%", height: 400 }}>
         <DonutPlot width={chartSize.width} height={chartSize.height} {...props} />
       </div>
     );

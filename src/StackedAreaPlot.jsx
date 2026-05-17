@@ -92,7 +92,7 @@ export const AreaPlot = ({ width, height, countryData, country='World', sourceCo
             <ChartTitle width={width}>Energy consumption by source over time</ChartTitle>
             <g transform={`translate(${margin.left}, ${margin.top})`}>
                 <g transform={`translate(0, ${innerHeight})`}>                
-                    <AxisBottom xScale={xScale} innerHeight={innerHeight} label="Year" />
+                    <AxisBottom xScale={xScale} pixelsPerTick={50} innerHeight={innerHeight} label="Year" />
                 </g>
                 <AxisLeft yScale={yScale} pixelsPerTick={50} innerWidth={innerWidth} label="Energy (TWh)" tickDivisor={1000} />
                 {drawOrder.map((source) => {
