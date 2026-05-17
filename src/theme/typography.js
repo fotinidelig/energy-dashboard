@@ -3,7 +3,7 @@
  * Keep values in sync with the CSS custom properties.
  */
 export const fontSize = {
-  axisInline: 12,
+  axisInline: 10,
   annotation: 14,
   label: 14,
   body: 16,

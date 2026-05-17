@@ -2,9 +2,10 @@ import { useMemo, useRef, useState } from "react";
 import * as d3 from 'd3';
 import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
+import { ChartTitle } from './ChartTitle.jsx'
 import { fontSize } from './theme/typography.js'
 
-export const DonutPlot = ({ width, height, data, year, country, sourceColors}) => {
+export const DonutPlot = ({ width, height, data, year, sourceGlobal, sourceColors}) => {
 
     const inflexionPadding = 10;
 
@@ -43,6 +44,7 @@ export const DonutPlot = ({ width, height, data, year, country, sourceColors}) =
 
   return (
     <svg width={width} height={height} style={{ display: "inline-block" }}>
+      <ChartTitle width={width}>Yearly energy mix</ChartTitle>
       <g transform={`translate(${centerX}, ${centerY})`}>
         {arcs.map((arc, i) => {
             const slice = pie[i]
@@ -77,14 +79,22 @@ export const DonutPlot = ({ width, height, data, year, country, sourceColors}) =
 
             const vivid = source ? sourceColors?.[source] : undefined;
             const muted = source ? sourceMutedColors?.[source] : undefined;
-            const arcFill =
-              vivid == null
-                ? '#ccc'
-                : hoveredIndex === null
-                  ? vivid
-                  : hoveredIndex === i
+            const isGlobal = source === sourceGlobal;
+            let arcFill;
+            if (sourceGlobal === source) {
+              // If sourceGlobal is set, only this source should be vivid, all others muted.
+              arcFill = isGlobal ? vivid ?? '#ccc' : muted ?? '#ccc';
+            } else {
+              arcFill =
+                vivid == null
+                  ? '#ccc'
+                  : hoveredIndex === null
                     ? vivid
-                    : muted ?? vivid;
+                    : hoveredIndex === i
+                      ? vivid
+                      : muted ?? vivid;
+            }
+         
 
             return (
                 <g
@@ -131,7 +141,7 @@ export const DonutPlot = ({ width, height, data, year, country, sourceColors}) =
             )
         })}
         <circle r={innerRadius - 1} fill="white"/>
-        <text x={0} y={0} textAnchor="middle" dominantBaseline="middle" fontSize={fontSize.label}>{year}</text>
+        <text x={0} y={0} textAnchor="middle" dominantBaseline="middle" fontSize={fontSize.label} fontWeight={600}>{year}</text>
       </g>
     </svg>
   );

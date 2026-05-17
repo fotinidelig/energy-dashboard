@@ -3,7 +3,7 @@
  * Use CSS variables in stylesheets; use typography.js in SVG/chart components.
  */
 :root {
-  --font-size-axis-inline: 12px;
+  --font-size-axis-inline: 10px;
   --font-size-annotation: 14px;
   --font-size-label: 14px;
   --font-size-body: 16px;

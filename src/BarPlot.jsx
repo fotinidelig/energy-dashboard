@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import * as d3 from 'd3';
 import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
+import { ChartTitle } from './ChartTitle.jsx'
 import { fontSize } from './theme/typography.js'
 
 export const BarPlot = ({
@@ -47,7 +48,7 @@ export const BarPlot = ({
     // ToDo: use to construct stacked bar plot
 
     // 2) Chart dimensions and margins.
-    const margin = { top: 15, right: 50, bottom: 15, left: 120 };
+    const margin = { top: 44, right: 50, bottom: 15, left: 120 };
     const innerWidth = Math.max(0, (width ?? 0) - margin.left - margin.right);
     const innerHeight = Math.max(0, (height ?? 0) - margin.top - margin.bottom);
   
@@ -73,6 +74,7 @@ export const BarPlot = ({
     return (
         <svg width={width} height={height} role="img" aria-label="Energy consumption by country bar chart"
         overflow={'visible'}>
+            <ChartTitle width={width}>Energy consumption by country</ChartTitle>
             <g transform={`translate(${margin.left}, ${margin.top})`}>
             {sortedData.map((d, i) => {
                 const y = yScale(d.country);

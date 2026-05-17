@@ -1,4 +1,4 @@
-const TICK_LENGTH = 4;
+import { fontSize } from "./theme/typography";
 
 export const AxisLeft = ({ yScale, pixelsPerTick, innerWidth, label, tickDivisor = 1 }) => {
   const range = yScale.range();
@@ -21,7 +21,7 @@ export const AxisLeft = ({ yScale, pixelsPerTick, innerWidth, label, tickDivisor
           {/* <line x2={-TICK_LENGTH} stroke="#9ca3af" /> */}
           <text
             style={{
-              fontSize: "9px",
+              fontSize: fontSize.axisInline,
               textAnchor: "middle",
               dominantBaseline: 'middle',
               transform: "translateX(-15px)",
@@ -35,7 +35,7 @@ export const AxisLeft = ({ yScale, pixelsPerTick, innerWidth, label, tickDivisor
       <g transform={`translate(0, ${range[1]}) rotate(-90)`}>
         <text
           style={{
-            fontSize: "14px",
+            fontSize: fontSize.label,
             textAnchor: "end",
             transform: "translateY(-35px)",
           }}

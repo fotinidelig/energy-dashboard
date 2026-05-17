@@ -4,6 +4,7 @@ import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
 import { AxisBottom } from './AxisBottom.jsx' 
 import { AxisLeft } from './AxisLeft.jsx' 
+import { ChartTitle } from './ChartTitle.jsx'
 import { fontSize } from './theme/typography.js'
 
 
@@ -26,7 +27,7 @@ export const AreaPlot = ({ width, height, countryData, country='World', sourceCo
     const series = stackSeries(countryData);
 
     // Margins (extra right space for source labels)
-    const margin = { top: 20, right: 120, bottom: 40, left: 60 };
+    const margin = { top: 44, right: 120, bottom: 40, left: 60 };
     const LABEL_GAP = 8;
     const innerWidth = Math.max(0, (width ?? 0) - margin.left - margin.right);
     const innerHeight = Math.max(0, (height ?? 0) - margin.top - margin.bottom);
@@ -86,8 +87,9 @@ export const AreaPlot = ({ width, height, countryData, country='World', sourceCo
     }, [series, xScale, yScale, innerWidth, sourceColors, sourceMutedColors, hoveredSource]);
 
     return (
-        <svg width={width} height={height} role="img" aria-label="Energy consumption by country stacked area chart"
+        <svg width={width} height={height} role="img" aria-label="Energy consumption by source over time stacked area chart"
         overflow={'visible'}>
+            <ChartTitle width={width}>Energy consumption by source over time</ChartTitle>
             <g transform={`translate(${margin.left}, ${margin.top})`}>
                 <g transform={`translate(0, ${innerHeight})`}>                
                     <AxisBottom xScale={xScale} innerHeight={innerHeight} label="Year" />

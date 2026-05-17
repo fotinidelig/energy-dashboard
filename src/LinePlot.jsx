@@ -4,6 +4,7 @@ import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
 import { AxisLeft } from './AxisLeft.jsx'
 import { AxisBottom } from './AxisBottom.jsx'
+import { ChartTitle } from './ChartTitle.jsx'
 import { fontSize } from './theme/typography.js'
 
 export const LinePlot = ({ width, height, data, country='World', sourceColors }) => {
@@ -30,7 +31,7 @@ export const LinePlot = ({ width, height, data, country='World', sourceColors })
         [sourceColors],
       );
     // Margins (extra right space for source labels)
-    const margin = { top: 20, right: 120, bottom: 40, left: 60 };
+    const margin = { top: 44, right: 120, bottom: 40, left: 60 };
     const innerWidth = Math.max(0, (width ?? 0) - margin.left - margin.right);
     const innerHeight = Math.max(0, (height ?? 0) - margin.top - margin.bottom);
 
@@ -88,6 +89,7 @@ export const LinePlot = ({ width, height, data, country='World', sourceColors })
     return (
     <div>
       <svg width={width} height={height}>
+        <ChartTitle width={width}>Renewable energy over time</ChartTitle>
         <g transform={`translate(${[margin.left, margin.top].join(",")})`}>
           <g transform={`translate(0, ${innerHeight})`}>
             <AxisBottom xScale={xScale} innerHeight={innerHeight} label="Year" />
