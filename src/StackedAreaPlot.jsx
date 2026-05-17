@@ -4,6 +4,7 @@ import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
 import { AxisBottom } from './AxisBottom.jsx' 
 import { AxisLeft } from './AxisLeft.jsx' 
+import { fontSize } from './theme/typography.js'
 
 
 export const AreaPlot = ({ width, height, countryData, country='World', sourceColors }) => {
@@ -24,8 +25,9 @@ export const AreaPlot = ({ width, height, countryData, country='World', sourceCo
         .offset(d3.stackOffsetNone);
     const series = stackSeries(countryData);
 
-    // Margins
-    const margin = { top: 15, right: 60, bottom: 15, left: 60 };
+    // Margins (extra right space for source labels)
+    const margin = { top: 20, right: 120, bottom: 40, left: 60 };
+    const LABEL_GAP = 8;
     const innerWidth = Math.max(0, (width ?? 0) - margin.left - margin.right);
     const innerHeight = Math.max(0, (height ?? 0) - margin.top - margin.bottom);
 
@@ -56,50 +58,116 @@ export const AreaPlot = ({ width, height, countryData, country='World', sourceCo
         .y1((d) => yScale(d[1]))
         .y0((d) => yScale(d[0]));
 
-    const seriesToDraw = useMemo(() => {
-      if (!hoveredSource) return series;
-      const hovered = series.find((s) => s.key === hoveredSource);
-      if (!hovered) return series;
-      return [...series.filter((s) => s.key !== hoveredSource), hovered];
-    }, [series, hoveredSource]);
+    const drawOrder = useMemo(() => {
+      if (!hoveredSource) return sources;
+      return [...sources.filter((s) => s !== hoveredSource), hoveredSource];
+    }, [sources, hoveredSource]);
 
-    const allPath = seriesToDraw.map((serie) => {
-        const path = areaBuilder(serie);
+    const sourceLabels = useMemo(() => {
+      return series.map((serie) => {
+        const last = serie[serie.length - 1];
+        if (!last) return null;
+        const x = xScale(last.data.year);
+        const y = (yScale(last[0]) + yScale(last[1])) / 2;
         const source = serie.key;
         const vivid = sourceColors?.[source];
         const muted = sourceMutedColors?.[source];
-        const fill =
+        const color =
           vivid == null
-            ? '#ccc'
+            ? '#111827'
             : hoveredSource === null
               ? vivid
               : hoveredSource === source
                 ? vivid
                 : muted ?? vivid;
+        const labelX = innerWidth + LABEL_GAP + 4;
+        return { source, x, y, color, labelX };
+      }).filter(Boolean);
+    }, [series, xScale, yScale, innerWidth, sourceColors, sourceMutedColors, hoveredSource]);
 
-        return (
-          <path
-            key={source}
-            d={path}
-            fill={fill}
-            stroke="#fff"
-            strokeWidth={.5}
-            strokeLinejoin="round"
-            onMouseEnter={() => setHoveredSource(source)}
-            onMouseLeave={() => setHoveredSource(null)}
-            style={{ cursor: 'pointer' }}
-          />
-        );
-    });
     return (
         <svg width={width} height={height} role="img" aria-label="Energy consumption by country stacked area chart"
         overflow={'visible'}>
             <g transform={`translate(${margin.left}, ${margin.top})`}>
                 <g transform={`translate(0, ${innerHeight})`}>                
-                    <AxisBottom xScale={xScale} pixelsPerTick={50} innerWidth={innerWidth} label="Year" />
+                    <AxisBottom xScale={xScale} innerHeight={innerHeight} label="Year" />
                 </g>
-                <AxisLeft yScale={yScale} pixelsPerTick={50} innerHeight={innerHeight} label="Energy (TWh)" />
-                {allPath}
+                <AxisLeft yScale={yScale} pixelsPerTick={50} innerWidth={innerWidth} label="Energy (TWh)" tickDivisor={1000} />
+                {drawOrder.map((source) => {
+                  const serie = series.find((s) => s.key === source);
+                  const label = sourceLabels.find((l) => l.source === source);
+                  if (!serie) return null;
+
+                  const vivid = sourceColors?.[source];
+                  const muted = sourceMutedColors?.[source];
+                  const fill =
+                    vivid == null
+                      ? '#ccc'
+                      : hoveredSource === null
+                        ? vivid
+                        : hoveredSource === source
+                          ? vivid
+                          : muted ?? vivid;
+
+                  const useElbow = source === 'other_renewable';
+                  const endY = label && useElbow ? label.y - 14 : label?.y;
+                  const leaderPath =
+                    label && useElbow
+                      ? `M ${label.x} ${label.y} L ${label.labelX} ${label.y} L ${label.labelX} ${endY}`
+                      : null;
+
+                  return (
+                    <g
+                      key={source}
+                      className="series"
+                      onMouseEnter={() => setHoveredSource(source)}
+                      onMouseLeave={() => setHoveredSource(null)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <path
+                        d={areaBuilder(serie)}
+                        fill={fill}
+                        stroke="#fff"
+                        strokeWidth={0.5}
+                        strokeLinejoin="round"
+                      />
+                      {label ? (
+                        <>
+                          {useElbow ? (
+                            <path
+                              d={leaderPath}
+                              fill="none"
+                              stroke={label.color}
+                              strokeWidth={1.5}
+                              pointerEvents="stroke"
+                            />
+                          ) : (
+                            <line
+                              x1={label.x}
+                              y1={label.y}
+                              x2={label.labelX}
+                              y2={label.y}
+                              stroke={label.color}
+                              strokeWidth={1.5}
+                              pointerEvents="stroke"
+                            />
+                          )}
+                          <text
+                            x={label.labelX + 4}
+                            y={endY}
+                            textAnchor="start"
+                            dominantBaseline="middle"
+                            fill={label.color}
+                            fontSize={fontSize.label}
+                            pointerEvents="all"
+                          >
+                            {source.replace(/_/g, ' ')}
+                          </text>
+                        </>
+                      ) : null}
+                    </g>
+                  );
+                })}
             </g>
         </svg>
     )

@@ -3,6 +3,7 @@ import { data } from "./energy.js"
 import ResponsiveBarPlot from "./BarPlot.jsx"
 import ResponsiveDonutPlot from './DonutPlot.jsx';
 import ResponsiveAreaPlot from './StackedAreaPlot.jsx';
+import ResponsiveLinePlot from './LinePlot.jsx';
 import { schemeTableau10 } from "d3";
 
 /** Mix columns from `energy.js` (excludes country, year, primary_energy). */
@@ -63,6 +64,13 @@ function App() {
           <div className='chart-card'>
             <ResponsiveAreaPlot
               countryData={worldTimeSeries}
+              country="World"
+              sourceColors={energySourceToColor}
+            />
+          </div>
+          <div className='chart-card'>
+            <ResponsiveLinePlot
+              data={worldTimeSeries}
               country="World"
               sourceColors={energySourceToColor}
             />

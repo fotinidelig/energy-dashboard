@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import * as d3 from 'd3';
 import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
+import { fontSize } from './theme/typography.js'
 
 export const DonutPlot = ({ width, height, data, year, country, sourceColors}) => {
 
@@ -105,21 +106,22 @@ export const DonutPlot = ({ width, height, data, year, country, sourceColors}) =
                             y1={centroid[1]}
                             x2={inflexionPoint[0]}
                             y2={inflexionPoint[1]}
-                            stroke="black"
+                            stroke={arcFill}
                         />
                         <line
                             x1={inflexionPoint[0]}
                             y1={inflexionPoint[1]}
                             x2={labelPosX}
                             y2={inflexionPoint[1]}
-                            stroke="black"
+                            stroke={arcFill}
                         />
                         <text
                             x={labelPosX + (isRightLabel ? 2 : -2)}
                             y={inflexionPoint[1]}
                             textAnchor={textAnchor}
                             dominantBaseline="middle"
-                            fontSize={14}
+                            fontSize={fontSize.label}
+                            fill={arcFill}
                         >
                             {label}
                         </text>
@@ -129,7 +131,7 @@ export const DonutPlot = ({ width, height, data, year, country, sourceColors}) =
             )
         })}
         <circle r={innerRadius - 1} fill="white"/>
-        <text x={0} y={0} textAnchor="middle" dominantBaseline="middle" fontSize={14}>{year}</text>
+        <text x={0} y={0} textAnchor="middle" dominantBaseline="middle" fontSize={fontSize.label}>{year}</text>
       </g>
     </svg>
   );

@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import * as d3 from 'd3';
 import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
+import { fontSize } from './theme/typography.js'
 
 export const BarPlot = ({
   width,
@@ -104,7 +105,7 @@ export const BarPlot = ({
                         textAnchor="end"
                         dominantBaseline="middle"
                         fill="#111827"
-                        fontSize={14}
+                        fontSize={fontSize.label}
                         fontWeight={isHovered ? 'bold' : 'normal'}
                     >
                         {d.country}
@@ -127,7 +128,7 @@ export const BarPlot = ({
                         textAnchor="start"
                         dominantBaseline="middle"
                         fill="#111827"
-                        fontSize={14}
+                        fontSize={fontSize.axisInline}
                         fontWeight={isHovered ? 'bold' : 'normal'}
                     >
                         {(d[source] / 1000).toFixed(2)}k

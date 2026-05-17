@@ -1,3 +1,5 @@
+@import './theme/typography.css';
+
 :root {
   font-family:
     'Baloo 2',
@@ -36,6 +38,12 @@ body {
 
 h1 {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--font-size-header);
+  font-weight: 600;
+}
+
+h2 {
+  margin: 0;
+  font-size: var(--font-size-subheader);
   font-weight: 600;
 }
