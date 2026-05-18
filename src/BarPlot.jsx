@@ -78,9 +78,11 @@ export const BarPlot = ({
                 const muted = sourceMutedColors?.[source];
                 const barFill =
                   vivid != null && muted != null
-                    ? isHovered
+                    ? hoveredCountry === null 
                       ? vivid
-                      : muted
+                      : isHovered
+                        ? vivid
+                        : muted
                     : isHovered
                       ? "#2F2D4A"
                       : "#7774aa";
