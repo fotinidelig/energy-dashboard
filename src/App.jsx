@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import './App.css'
 import { data } from "./energy.js"
 import ResponsiveBarPlot from "./BarPlot.jsx"
@@ -5,14 +6,15 @@ import ResponsiveDonutPlot from './DonutPlot.jsx';
 import ResponsiveAreaPlot from './StackedAreaPlot.jsx';
 import ResponsiveLinePlot from './LinePlot.jsx';
 import { schemeTableau10 } from "d3";
+import { muteColor } from './muteColor.js';
 
 /** Mix columns from `energy.js` (excludes country, year, primary_energy). */
 const ENERGY_SOURCE_KEYS = [
   "coal",
   "oil",
   "gas",
-  "nuclear",
   "hydro",
+  "nuclear",
   "solar",
   "wind",
   "biofuel",
@@ -23,6 +25,7 @@ const ENERGY_SOURCE_KEYS = [
 const energySourceToColor = Object.fromEntries(
   ENERGY_SOURCE_KEYS.map((key, i) => [key, schemeTableau10[i]]),
 );
+
 
 const year = 2024
 // change country name 'United Arab Emirates' to 'Un. Arab Emirates'
@@ -40,10 +43,55 @@ const donutData = ENERGY_SOURCE_KEYS.map((source) => ({
   value: worldRow ? Number(worldRow[source]) || 0 : 0,
 }))
 
+function SourceButtonLabel({ source }) {
+  if (source === 'other_renewable') {
+    return (
+      <>
+        other
+        <br />
+        renewable
+      </>
+    )
+  }
+  return source.replace(/_/g, ' ')
+}
+
 function App() {
+  const [selectedSource, setSelectedSource] = useState('total')
+  const [hoveredSource, setHoveredSource] = useState(null)
+
   return (
     <div className="app">
-      <main className="container">
+      <div className="source-button-container">
+        {ENERGY_SOURCE_KEYS.map((source) => {
+          const isActive =
+            hoveredSource === source || selectedSource === source
+          return (
+            <button
+              key={source}
+              type="button"
+              className="source-button"
+              onClick={() => {
+                if (source === selectedSource) {
+                  setSelectedSource('total');
+                } else {
+                  setSelectedSource(source);
+                }
+              }}
+              onMouseEnter={() => setHoveredSource(source)}
+              onMouseLeave={() => setHoveredSource(null)}
+              style={{
+                backgroundColor: isActive
+                  ? energySourceToColor[source]
+                  : muteColor(energySourceToColor[source]),
+              }}
+            >
+              <SourceButtonLabel source={source} />
+            </button>
+          )
+        })}
+      </div>
+      <main className="container app-main">
         <h1>Energy dashboard</h1>
         <div className="dashboard">
           <div className='chart-card'>
@@ -58,6 +106,7 @@ function App() {
               data={donutData}
               year={year}
               country='World'
+              sourceGlobal={selectedSource}
               sourceColors={energySourceToColor}
             />
           </div>
@@ -72,7 +121,7 @@ function App() {
               <ResponsiveBarPlot
                 data={yearlyData}
                 country='None'
-                source='oil'
+                source={selectedSource}
                 sourceColors={energySourceToColor}
               />
             </div>
@@ -81,5 +130,6 @@ function App() {
     </div>
   )
 }
+
 
 export default App

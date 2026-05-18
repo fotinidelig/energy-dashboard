@@ -1,6 +1,12 @@
+@import './theme/typography.css';
+
 .app {
   min-height: 100vh;
   background-color: rgb(183, 191, 198);
+}
+
+.app-main {
+  min-height: 100vh;
 }
 
 .container {
@@ -14,6 +20,45 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   align-items: center;
+}
+
+.source-button-container {
+  position: fixed;  
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  height: 60%;
+  top: 20%;
+
+  font: var(--font-size-body);
+}
+
+.source-button {
+  max-width: 5.5rem;
+  padding: 6px 12px;
+  border-radius: 0 100px 100px 0;
+  color: #111827;
+  font-size: var(--font-size-label);
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  touch-action: manipulation;
+  transition: all 250ms;
+
+  /* add border everywhere except left side */
+  border-left: 0;
+  border-top: 1px solid rgba(255, 255, 255, .9);
+  border-bottom: 1px solid rgba(255, 255, 255, .9);
+  border-right: 1px solid rgba(255, 255, 255, .9);
+
+  box-shadow: #11182729 0 2px 4px,#11182729 0 4px 8px,#11182729 0 8px 16px,#11182729 0 16px 32px;
+
+}
+
+.source-button:hover {
+  cursor: pointer;
+  border: 0;
 }
 
 .chart-card {
