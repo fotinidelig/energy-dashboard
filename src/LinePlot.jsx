@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useContext } from "react";
 import * as d3 from "d3";
+import { sourceContext } from './DashboardContext.jsx';
 import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
 import { AxisLeft } from './AxisLeft.jsx'
@@ -7,7 +8,10 @@ import { AxisBottom } from './AxisBottom.jsx'
 import { ChartTitle } from './ChartTitle.jsx'
 import { fontSize } from './theme/typography.js'
 
+const COMBINED_SOURCE = 'combined';
+
 export const LinePlot = ({ width, height, data, country='World', sourceColors }) => {
+    const { selectedSource, setSelectedSource } = useContext(sourceContext);
     const [hoveredSource, setHoveredSource] = useState(null);
 
     const renewableSources = [
@@ -25,7 +29,12 @@ export const LinePlot = ({ width, height, data, country='World', sourceColors })
             ),
         }));
     }, [data]);
-    
+
+    const emphasizedSource = useMemo(() => {
+      if (selectedSource !== COMBINED_SOURCE) return selectedSource;
+      return hoveredSource;
+    }, [selectedSource, hoveredSource]);
+
     const sourceMutedColors = useMemo(
         () => (sourceColors ? muteColor(sourceColors) : undefined),
         [sourceColors],
@@ -76,15 +85,23 @@ export const LinePlot = ({ width, height, data, country='World', sourceColors })
         const color =
           vivid == null
           ? '#111827'
-          : hoveredSource === null
+          : emphasizedSource == null || emphasizedSource === source
             ? vivid
-            : hoveredSource === source
-              ? vivid
-              : muted ?? vivid;
+            : muted ?? vivid;
         const labelX = innerWidth + 4;
         return { source, x, y, color, labelX };
       }).filter(Boolean);
-    }, [lines, xScale, yScale, innerWidth, sourceColors, sourceMutedColors, hoveredSource, renewableData, xMax]);
+    }, [lines, xScale, yScale, innerWidth, sourceColors, sourceMutedColors, emphasizedSource, renewableData, xMax]);
+
+    const drawOrder = useMemo(() => {
+      if (!emphasizedSource || !renewableSources.includes(emphasizedSource)) {
+        return renewableSources;
+      }
+      return [
+        ...renewableSources.filter((s) => s !== emphasizedSource),
+        emphasizedSource,
+      ];
+    }, [emphasizedSource]);
 
     return (
     <div>
@@ -101,19 +118,18 @@ export const LinePlot = ({ width, height, data, country='World', sourceColors })
           height={innerHeight}
           transform={`translate(${[margin.left, margin.top].join(",")})`}
         >
-          {lines.map((line) => {
-            const source = line.source;
+          {drawOrder.map((source) => {
+            const line = lines.find((l) => l.source === source);
+            if (!line) return null;
             const label = sourceLabels.find((l) => l.source === source);
             const vivid = sourceColors?.[source];
             const muted = sourceMutedColors?.[source];
             const stroke =
               vivid == null
                 ? '#ccc'
-                : hoveredSource === null
+                : emphasizedSource == null || emphasizedSource === source
                   ? vivid
-                  : hoveredSource === source
-                    ? vivid
-                    : muted ?? vivid;
+                  : muted ?? vivid;
 
             return (
               <g
@@ -121,6 +137,11 @@ export const LinePlot = ({ width, height, data, country='World', sourceColors })
                 className="series"
                 onMouseEnter={() => setHoveredSource(source)}
                 onMouseLeave={() => setHoveredSource(null)}
+                onClick={() =>
+                  setSelectedSource(
+                    selectedSource === source ? COMBINED_SOURCE : source,
+                  )
+                }
                 style={{ cursor: 'pointer' }}
               >
                 <path
@@ -131,7 +152,7 @@ export const LinePlot = ({ width, height, data, country='World', sourceColors })
                   pointerEvents="stroke"
                 />
                 {label ? (
-                  <text
+                  <text className='text-label'
                     x={label.labelX + 4}
                     y={label.y}
                     textAnchor="start"

@@ -1,15 +1,20 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useContext } from "react";
 import * as d3 from 'd3';
+import { sourceContext } from './DashboardContext.jsx';
 import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
 import { ChartTitle } from './ChartTitle.jsx'
 import { fontSize } from './theme/typography.js'
+import './theme/typography.css';
 
-export const DonutPlot = ({ width, height, data, year, sourceGlobal, sourceColors}) => {
+const COMBINED_SOURCE = 'combined';
+
+export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
+    const { selectedSource, setSelectedSource } = useContext(sourceContext);
 
     const inflexionPadding = 10;
 
-    const outerRadius = Math.min(width, height) / 2 - 30;
+    const outerRadius = Math.min(width, height) / 2 - 35;
     const innerRadius = outerRadius * 0.5;
     const centerX = width / 2;
     const centerY = height / 2;
@@ -29,6 +34,12 @@ export const DonutPlot = ({ width, height, data, year, sourceGlobal, sourceColor
       const pieGenerator = d3.pie().value((d) => d.value)
       return pieGenerator(rows)
     }, [data])
+
+    const emphasizedSource = useMemo(() => {
+      if (selectedSource !== COMBINED_SOURCE) return selectedSource;
+      const hovered = hoveredIndex != null ? pie[hoveredIndex]?.data?.source : null;
+      return hovered ?? null;
+    }, [selectedSource, hoveredIndex, pie]);
 
     const arcPathGenerator = d3.arc();
     const arcs = useMemo(() => {
@@ -75,32 +86,31 @@ export const DonutPlot = ({ width, height, data, year, sourceGlobal, sourceColor
               (percentages[i] * 100).toFixed(1) +
               "%)";
 
-            const showCallout = hoveredIndex === i && slice.value > 0;
+            const showCallout =
+              slice.value > 0 &&
+              (hoveredIndex === i ||
+                (selectedSource !== COMBINED_SOURCE && selectedSource === source));
 
             const vivid = source ? sourceColors?.[source] : undefined;
             const muted = source ? sourceMutedColors?.[source] : undefined;
-            const isGlobal = source === sourceGlobal;
-            let arcFill;
-            if (sourceGlobal === source) {
-              // If sourceGlobal is set, only this source should be vivid, all others muted.
-              arcFill = isGlobal ? vivid ?? '#ccc' : muted ?? '#ccc';
-            } else {
-              arcFill =
-                vivid == null
-                  ? '#ccc'
-                  : hoveredIndex === null
-                    ? vivid
-                    : hoveredIndex === i
-                      ? vivid
-                      : muted ?? vivid;
-            }
-         
+            const arcFill =
+              vivid == null
+                ? '#ccc'
+                : emphasizedSource == null || emphasizedSource === source
+                  ? vivid
+                  : muted ?? vivid;
 
             return (
                 <g
                   key={source ?? i}
                   onMouseEnter={() => setHoveredIndex(i)}
                   onMouseLeave={() => setHoveredIndex(null)}
+                  onClick={() => {
+                    if (slice.value <= 0 || !source) return;
+                    setSelectedSource(
+                      selectedSource === source ? COMBINED_SOURCE : source,
+                    );
+                  }}
                   style={{ cursor: slice.value > 0 ? "pointer" : "default" }}
                 >
                     <path
@@ -125,7 +135,7 @@ export const DonutPlot = ({ width, height, data, year, sourceGlobal, sourceColor
                             y2={inflexionPoint[1]}
                             stroke={arcFill}
                         />
-                        <text
+                        <text className='text-label'
                             x={labelPosX + (isRightLabel ? 2 : -2)}
                             y={inflexionPoint[1]}
                             textAnchor={textAnchor}
@@ -141,7 +151,7 @@ export const DonutPlot = ({ width, height, data, year, sourceGlobal, sourceColor
             )
         })}
         <circle r={innerRadius - 1} fill="white"/>
-        <text x={0} y={0} textAnchor="middle" dominantBaseline="middle" fontSize={fontSize.label} fontWeight={600}>{year}</text>
+        <text x={0} y={0} textAnchor="middle" dominantBaseline="middle" fontSize={fontSize.subheader} fontWeight={600}>{year}</text>
       </g>
     </svg>
   );

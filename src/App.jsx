@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import './App.css'
+import './App.css';
 import { data } from "./energy.js"
+import { sourceContext } from './DashboardContext.jsx';
 import ResponsiveBarPlot from "./BarPlot.jsx"
 import ResponsiveDonutPlot from './DonutPlot.jsx';
 import ResponsiveAreaPlot from './StackedAreaPlot.jsx';
 import ResponsiveLinePlot from './LinePlot.jsx';
 import { schemeTableau10 } from "d3";
 import { muteColor } from './muteColor.js';
+import { fontSize } from './theme/typography.js';
 
-/** Mix columns from `energy.js` (excludes country, year, primary_energy). */
 const ENERGY_SOURCE_KEYS = [
   "coal",
   "oil",
@@ -18,14 +19,32 @@ const ENERGY_SOURCE_KEYS = [
   "solar",
   "wind",
   "biofuel",
-  "other_renewable",
+  "other_renewable"
 ];
+
+const buttonSources = [
+  "combined",
+  "coal",
+  "oil",
+  "gas",
+  "hydro",
+  "nuclear",
+  "solar",
+  "wind",
+  "biofuel",
+  "other_renewable"
+]
+
 
 /** Stable source key → Tableau 10 color. */
 const energySourceToColor = Object.fromEntries(
   ENERGY_SOURCE_KEYS.map((key, i) => [key, schemeTableau10[i]]),
 );
 
+const combinedColor = '#2f2d4a';
+const buttonSourceToColor = Object.fromEntries(
+  buttonSources.map((key) => [key, key === 'combined' ? combinedColor : energySourceToColor[key]]),
+);
 
 const year = 2024
 // change country name 'United Arab Emirates' to 'Un. Arab Emirates'
@@ -57,76 +76,79 @@ function SourceButtonLabel({ source }) {
 }
 
 function App() {
-  const [selectedSource, setSelectedSource] = useState('total')
   const [hoveredSource, setHoveredSource] = useState(null)
+  const [selectedSource, setSelectedSource] = useState('combined')
 
   return (
     <div className="app">
-      <div className="source-button-container">
-        {ENERGY_SOURCE_KEYS.map((source) => {
-          const isActive =
-            hoveredSource === source || selectedSource === source
-          return (
-            <button
-              key={source}
-              type="button"
-              className="source-button"
-              onClick={() => {
-                if (source === selectedSource) {
-                  setSelectedSource('total');
-                } else {
-                  setSelectedSource(source);
-                }
-              }}
-              onMouseEnter={() => setHoveredSource(source)}
-              onMouseLeave={() => setHoveredSource(null)}
-              style={{
-                backgroundColor: isActive
-                  ? energySourceToColor[source]
-                  : muteColor(energySourceToColor[source]),
-              }}
-            >
-              <SourceButtonLabel source={source} />
-            </button>
-          )
-        })}
-      </div>
-      <main className="container app-main">
-        <h1>Energy dashboard</h1>
-        <div className="dashboard">
-          <div className='chart-card'>
-            <ResponsiveAreaPlot
-              countryData={worldTimeSeries}
-              country="World"
-              sourceColors={energySourceToColor}
-            />
-          </div>
-          <div className='chart-card'>
-            <ResponsiveDonutPlot
-              data={donutData}
-              year={year}
-              country='World'
-              sourceGlobal={selectedSource}
-              sourceColors={energySourceToColor}
-            />
-          </div>
-          <div className='chart-card'>
-            <ResponsiveLinePlot
-              data={worldTimeSeries}
-              country="World"
-              sourceColors={energySourceToColor}
-            />
-          </div>
+      <sourceContext.Provider value={{ selectedSource, setSelectedSource }}>
+        <div className="source-button-container">
+          {buttonSources.map((source) => {
+            const isActive =
+              hoveredSource === source || selectedSource === source
+            return (
+              <button
+                key={source}
+                type="button"
+                className="source-button"
+                onClick={() => {
+                  if (source === selectedSource) {
+                    setSelectedSource('combined');
+                  } else {
+                    setSelectedSource(source);
+                  }
+                }}
+                onMouseEnter={() => setHoveredSource(source)}
+                onMouseLeave={() => setHoveredSource(null)}
+                style={{
+                  backgroundColor: isActive
+                    ? buttonSourceToColor[source]
+                    : muteColor(buttonSourceToColor[source]),
+                    color: source === 'combined' ? '#fff' : '#000',
+                    fontSize: source === 'other_renewable' ? fontSize.label : fontSize.body,
+                }}
+              >
+                <SourceButtonLabel source={source} />
+              </button>
+            )
+          })}
+        </div>
+        <main className="container app-main">
+          <h1>Energy dashboard</h1>
+          <div className="dashboard">
             <div className='chart-card'>
-              <ResponsiveBarPlot
-                data={yearlyData}
-                country='None'
-                source={selectedSource}
+              <ResponsiveAreaPlot
+                countryData={worldTimeSeries}
+                country="World"
                 sourceColors={energySourceToColor}
               />
             </div>
-        </div>
-      </main>
+            <div className='chart-card'>
+              <ResponsiveDonutPlot
+                data={donutData}
+                year={year}
+                country='World'
+                sourceColors={energySourceToColor}
+              />
+            </div>
+            <div className='chart-card'>
+              <ResponsiveLinePlot
+                data={worldTimeSeries}
+                country="World"
+                sourceColors={energySourceToColor}
+              />
+            </div>
+              <div className='chart-card'>
+                <ResponsiveBarPlot
+                  data={yearlyData}
+                  country='None'
+                  source={selectedSource}
+                  sourceColors={buttonSourceToColor}
+                />
+              </div>
+          </div>
+        </main>
+      </sourceContext.Provider>
     </div>
   )
 }

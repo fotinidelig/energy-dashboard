@@ -32,6 +32,7 @@
 
 .text-label {
   font-size: var(--font-size-label);
+  text-shadow: 0px 0px 2px #2f2d4a55;
   font-weight: 400;
   line-height: 1.35;
 }

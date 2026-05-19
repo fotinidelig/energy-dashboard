@@ -9,7 +9,7 @@ export const BarPlot = ({
   width,
   height,
   data,
-  source = 'total',
+  source = 'combined',
   sourceColors,
 }) => {
 
@@ -24,17 +24,17 @@ export const BarPlot = ({
 
     // Sort once so bars render from highest to lowest (top to bottom).
     // create new column in data called 'total' summing up all energy sources
-    const totalData = safeData.map(d => {
-        const total = d.coal+d.oil+d.gas+d.nuclear+d.hydro+d.solar+d.wind+d.biofuel+d.other_renewable;
+    const combinedData = safeData.map(d => {
+        const combined = d.coal+d.oil+d.gas+d.nuclear+d.hydro+d.solar+d.wind+d.biofuel+d.other_renewable;
         return {
             ...d,
-            total
+            combined
         }
     });
 
     const sortedData = useMemo(() => {
-      return [...totalData].sort((a, b) => (b[source] ?? 0) - (a[source] ?? 0));
-    }, [totalData]);
+      return [...combinedData].sort((a, b) => (b[source] ?? 0) - (a[source] ?? 0));
+    }, [combinedData]);
     
     // ToDo: use to construct stacked bar plot
 

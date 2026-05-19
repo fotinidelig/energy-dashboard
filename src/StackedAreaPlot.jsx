@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useContext } from "react";
 import * as d3 from "d3";
+import { sourceContext } from './DashboardContext.jsx';
 import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
 import { AxisBottom } from './AxisBottom.jsx' 
@@ -8,11 +9,21 @@ import { ChartTitle } from './ChartTitle.jsx'
 import { fontSize } from './theme/typography.js'
 
 
-export const AreaPlot = ({ width, height, countryData, country='World', sourceColors }) => {
+const COMBINED_SOURCE = 'combined';
 
-    const sources = Object.keys(sourceColors ?? {});
+export const AreaPlot = ({ width, height, countryData, country='World', sourceColors }) => {
+    const { selectedSource, setSelectedSource } = useContext(sourceContext);
+    const sources = Object.keys(sourceColors ?? {}).filter(
+      (s) => s !== COMBINED_SOURCE,
+    );
 
     const [hoveredSource, setHoveredSource] = useState(null);
+
+    // Sidebar selection, or hover when viewing all sources
+    const emphasizedSource = useMemo(() => {
+      if (selectedSource !== COMBINED_SOURCE) return selectedSource;
+      return hoveredSource;
+    }, [selectedSource, hoveredSource]);
 
     const sourceMutedColors = useMemo(
       () => (sourceColors ? muteColor(sourceColors) : undefined),
@@ -60,9 +71,12 @@ export const AreaPlot = ({ width, height, countryData, country='World', sourceCo
         .y0((d) => yScale(d[0]));
 
     const drawOrder = useMemo(() => {
-      if (!hoveredSource) return sources;
-      return [...sources.filter((s) => s !== hoveredSource), hoveredSource];
-    }, [sources, hoveredSource]);
+      if (!emphasizedSource) return sources;
+      return [
+        ...sources.filter((s) => s !== emphasizedSource),
+        emphasizedSource,
+      ];
+    }, [sources, emphasizedSource]);
 
     const sourceLabels = useMemo(() => {
       return series.map((serie) => {
@@ -76,15 +90,13 @@ export const AreaPlot = ({ width, height, countryData, country='World', sourceCo
         const color =
           vivid == null
             ? '#111827'
-            : hoveredSource === null
+            : emphasizedSource == null || emphasizedSource === source
               ? vivid
-              : hoveredSource === source
-                ? vivid
-                : muted ?? vivid;
+              : muted ?? vivid;
         const labelX = innerWidth + LABEL_GAP + 4;
         return { source, x, y, color, labelX };
       }).filter(Boolean);
-    }, [series, xScale, yScale, innerWidth, sourceColors, sourceMutedColors, hoveredSource]);
+    }, [series, xScale, yScale, innerWidth, sourceColors, sourceMutedColors, emphasizedSource]);
 
     return (
         <svg width={width} height={height} role="img" aria-label="Energy consumption by source over time stacked area chart"
@@ -105,11 +117,9 @@ export const AreaPlot = ({ width, height, countryData, country='World', sourceCo
                   const fill =
                     vivid == null
                       ? '#ccc'
-                      : hoveredSource === null
+                      : emphasizedSource == null || emphasizedSource === source
                         ? vivid
-                        : hoveredSource === source
-                          ? vivid
-                          : muted ?? vivid;
+                        : muted ?? vivid;
 
                   const useElbow = source === 'other_renewable';
                   const endY = label && useElbow ? label.y - 14 : label?.y;
@@ -124,6 +134,11 @@ export const AreaPlot = ({ width, height, countryData, country='World', sourceCo
                       className="series"
                       onMouseEnter={() => setHoveredSource(source)}
                       onMouseLeave={() => setHoveredSource(null)}
+                      onClick={() =>
+                        setSelectedSource(
+                          selectedSource === source ? COMBINED_SOURCE : source,
+                        )
+                      }
                       style={{ cursor: 'pointer' }}
                     >
                       <path
@@ -154,7 +169,7 @@ export const AreaPlot = ({ width, height, countryData, country='World', sourceCo
                               pointerEvents="stroke"
                             />
                           )}
-                          <text
+                          <text className='text-label'
                             x={label.labelX + 4}
                             y={endY}
                             textAnchor="start"
