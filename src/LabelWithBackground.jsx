@@ -30,9 +30,6 @@ export function LabelWithBackground({
       : dominantBaseline === 'hanging'
         ? y - padY
         : y - fs - padY;
-  if (text === 'biofuel') {
-    console.log(text, textWidth, padX, x, rectX);
-  }
   return (
     <g pointerEvents={pointerEvents}>
       {showBackground ? (

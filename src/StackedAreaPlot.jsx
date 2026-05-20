@@ -7,6 +7,7 @@ import { AxisBottom } from './AxisBottom.jsx'
 import { AxisLeft } from './AxisLeft.jsx' 
 import { ChartTitle } from './ChartTitle.jsx'
 import { LabelWithBackground } from './LabelWithBackground.jsx'
+import { Cursor } from './Cursor.jsx'
 
 
 const COMBINED_SOURCE = 'combined';

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+
 import './App.css';
 import { data } from "./energy.js"
 import { sourceContext, countryContext, yearContext } from './DashboardContext.jsx';
@@ -81,7 +82,9 @@ function App() {
   const [hoveredSource, setHoveredSource] = useState(null)
   const [selectedSource, setSelectedSource] = useState('combined')
   const [selectedCountry, setSelectedCountry] = useState('World')
-  const [selectedYear, setSelectedYear] = useState(2024)
+  const [selectedYear, setSelectedYear] = useState(2024)  
+  const [cursorPosition, setCursorPosition] = useState(null);
+
 
   const yearlyData = useMemo(
     () => countryData.filter((d) => d.year === selectedYear),
@@ -189,6 +192,8 @@ function App() {
                   <ResponsiveLinePlot
                     data={countryTimeSeries}
                     sourceColors={energySourceToColor}
+                    cursorPosition={cursorPosition}
+                    setCursorPosition={setCursorPosition}
                   />
                 </div>
                 <div className="chart-card">

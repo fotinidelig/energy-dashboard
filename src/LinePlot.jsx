@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState, useContext } from "react";
+
 import * as d3 from "d3";
 import { sourceContext } from './DashboardContext.jsx';
 import { useDimensions } from './use-dimensions'
@@ -7,10 +8,11 @@ import { AxisLeft } from './AxisLeft.jsx'
 import { AxisBottom } from './AxisBottom.jsx'
 import { ChartTitle } from './ChartTitle.jsx'
 import { LabelWithBackground } from './LabelWithBackground.jsx'
+import { Cursor } from './Cursor.jsx'
 
 const COMBINED_SOURCE = 'combined';
 
-export const LinePlot = ({ width, height, data, sourceColors }) => {
+export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, setCursorPosition = () => {} }) => {
     const { selectedSource, setSelectedSource } = useContext(sourceContext);
     const [hoveredSource, setHoveredSource] = useState(null);
 
@@ -111,6 +113,38 @@ export const LinePlot = ({ width, height, data, sourceColors }) => {
       ];
     }, [emphasizedSource]);
 
+    const onMouseMove = (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      setCursorPosition(mouseX);
+    };
+
+    /** Snap line + dot to nearest year in the data (pixel x = xScale(year)). */
+    const cursorSnap = useMemo(() => {
+      if (cursorPosition == null) return null;
+      const year = xScale.invert(cursorPosition);
+      const source =
+        emphasizedSource && renewableSources.includes(emphasizedSource)
+          ? emphasizedSource
+          : renewableSources[1];
+      const rows = renewableData;
+      if (!rows.length) return null;
+      const i = d3.bisector((d) => d.year).center(rows, year);
+      const closest = rows[Math.max(0, Math.min(i, rows.length - 1))];
+      const v = Number(closest[source]) || 0;
+      return {
+        x: xScale(closest.year),
+        y: yScale(v),
+      };
+    }, [
+      cursorPosition,
+      xScale,
+      yScale,
+      renewableData,
+      emphasizedSource,
+      renewableSources,
+    ]);
+
     return (
     <div>
       <svg width={width} height={height} overflow={'visible'}>
@@ -122,9 +156,11 @@ export const LinePlot = ({ width, height, data, sourceColors }) => {
           <AxisLeft yScale={yScale} pixelsPerTick={50} innerWidth={innerWidth} label="Energy (TWh)" tickDivisor={1000} />
         </g>
         <g
-        width={innerWidth}
+          width={innerWidth}
           height={innerHeight}
           transform={`translate(${[margin.left, margin.top].join(",")})`}
+          onMouseMove={onMouseMove}
+          onMouseLeave={() => setCursorPosition(null)}
         >
           {drawOrder.map((source) => {
             const line = lines.find((l) => l.source === source);
@@ -174,6 +210,21 @@ export const LinePlot = ({ width, height, data, sourceColors }) => {
               </g>
             );
           })}
+          {cursorSnap != null && (
+            <Cursor
+              height={innerHeight}
+              x={cursorSnap.x}
+              y={cursorSnap.y}
+              color={
+                sourceColors?.[
+                  emphasizedSource &&
+                  renewableSources.includes(emphasizedSource)
+                    ? emphasizedSource
+                    : renewableSources[0]
+                ] ?? '#111827'
+              }
+            />
+          )}
         </g>
       </svg>
     </div>
