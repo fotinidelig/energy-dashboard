@@ -6,12 +6,12 @@ import { muteColor } from './muteColor.js'
 import { AxisBottom } from './AxisBottom.jsx' 
 import { AxisLeft } from './AxisLeft.jsx' 
 import { ChartTitle } from './ChartTitle.jsx'
-import { fontSize } from './theme/typography.js'
+import { LabelWithBackground } from './LabelWithBackground.jsx'
 
 
 const COMBINED_SOURCE = 'combined';
 
-export const AreaPlot = ({ width, height, countryData, country='World', sourceColors }) => {
+export const AreaPlot = ({ width, height, countryData, sourceColors }) => {
     const { selectedSource, setSelectedSource } = useContext(sourceContext);
     const sources = Object.keys(sourceColors ?? {}).filter(
       (s) => s !== COMBINED_SOURCE,
@@ -169,17 +169,16 @@ export const AreaPlot = ({ width, height, countryData, country='World', sourceCo
                               pointerEvents="stroke"
                             />
                           )}
-                          <text className='text-label'
+                          <LabelWithBackground
                             x={label.labelX + 4}
                             y={endY}
-                            textAnchor="start"
-                            dominantBaseline="middle"
+                            text={source.replace(/_/g, ' ')}
                             fill={label.color}
-                            fontSize={fontSize.label}
+                            showBackground={
+                              emphasizedSource === source
+                            }
                             pointerEvents="all"
-                          >
-                            {source.replace(/_/g, ' ')}
-                          </text>
+                          />
                         </>
                       ) : null}
                     </g>

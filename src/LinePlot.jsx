@@ -6,11 +6,11 @@ import { muteColor } from './muteColor.js'
 import { AxisLeft } from './AxisLeft.jsx'
 import { AxisBottom } from './AxisBottom.jsx'
 import { ChartTitle } from './ChartTitle.jsx'
-import { fontSize } from './theme/typography.js'
+import { LabelWithBackground } from './LabelWithBackground.jsx'
 
 const COMBINED_SOURCE = 'combined';
 
-export const LinePlot = ({ width, height, data, country='World', sourceColors }) => {
+export const LinePlot = ({ width, height, data, sourceColors }) => {
     const { selectedSource, setSelectedSource } = useContext(sourceContext);
     const [hoveredSource, setHoveredSource] = useState(null);
 
@@ -53,25 +53,33 @@ export const LinePlot = ({ width, height, data, country='World', sourceColors })
         .range([0, innerWidth]);
     }, [renewableData, innerWidth]);    
 
-    // Y axis
-    const maxValue = d3.max(renewableData, (d) => d3.max(Object.values(d)));
+    // Y axis — only renewable columns (Object.values would include `year`)
+    const maxValue = useMemo(
+      () =>
+        d3.max(renewableData, (d) =>
+          d3.max(renewableSources, (s) => d[s] ?? 0),
+        ) ?? 0,
+      [renewableData],
+    );
 
-    const yScale = d3.scaleLinear()
-        .domain([0, maxValue])
-        .range([innerHeight, 0]);
+    const yScale = useMemo(
+      () => d3.scaleLinear().domain([0, maxValue]).range([innerHeight, 0]).nice(),
+      [maxValue, innerHeight],
+    );
 
-    const lines = renewableSources.map((s) => {
+    const lines = useMemo(() => {
+      return renewableSources.map((s) => {
         const lineBuilder = d3.line()
-            .x((d) => xScale(d.year))
-            .y((d) => yScale(d[s]));
-        const linePath = lineBuilder(renewableData);
+          .x((d) => xScale(d.year))
+          .y((d) => yScale(d[s]));
         return {
-            source: s,
-            path: linePath,
-            color: sourceColors?.[s],
-            mutedColor: sourceMutedColors?.[s],
-        }
-    });
+          source: s,
+          path: lineBuilder(renewableData),
+          color: sourceColors?.[s],
+          mutedColor: sourceMutedColors?.[s],
+        };
+      });
+    }, [renewableData, renewableSources, xScale, yScale, sourceColors, sourceMutedColors]);
 
     const sourceLabels = useMemo(() => {
       const last = renewableData[renewableData.length - 1];
@@ -105,7 +113,7 @@ export const LinePlot = ({ width, height, data, country='World', sourceColors })
 
     return (
     <div>
-      <svg width={width} height={height}>
+      <svg width={width} height={height} overflow={'visible'}>
         <ChartTitle width={width}>Renewable energy over time</ChartTitle>
         <g transform={`translate(${[margin.left, margin.top].join(",")})`}>
           <g transform={`translate(0, ${innerHeight})`}>
@@ -147,22 +155,21 @@ export const LinePlot = ({ width, height, data, country='World', sourceColors })
                 <path
                   d={line.path}
                   fill="none"
-                  strokeWidth={2}
+                  strokeWidth={3}
                   stroke={stroke}
                   pointerEvents="stroke"
                 />
                 {label ? (
-                  <text className='text-label'
+                  <LabelWithBackground
                     x={label.labelX + 4}
                     y={label.y}
-                    textAnchor="start"
-                    dominantBaseline="middle"
+                    text={source.replace(/_/g, ' ')}
                     fill={label.color}
-                    fontSize={fontSize.label}
+                    showBackground={
+                      emphasizedSource === source
+                    }
                     pointerEvents="all"
-                  >
-                    {source.replace(/_/g, ' ')}
-                  </text>
+                  />
                 ) : null}
               </g>
             );

@@ -37,6 +37,12 @@
   line-height: 1.35;
 }
 
+/* text label on hover white shadow */
+/* .text-label:hover {
+  text-shadow: 0px 0px 4px #fafafa55;
+  transition: text-shadow 0.3s ease;
+} */
+
 .text-annotation {
   font-size: var(--font-size-annotation);
   font-weight: 400;

@@ -65,7 +65,7 @@ export const BarPlot = ({
     return (
         <svg width={width} height={height} role="img" aria-label="Energy consumption by country bar chart"
         overflow={'visible'}>
-            <ChartTitle width={width}>Energy consumption by country</ChartTitle>
+            <ChartTitle width={width}>Energy consumption by country (in TWh)</ChartTitle>
             <g transform={`translate(${margin.left}, ${margin.top})`}>
             {sortedData.map((d, i) => {
                 const y = yScale(d.country);
@@ -73,6 +73,9 @@ export const BarPlot = ({
                 const barWidth = xScale(d[source]);
                 const barHeight = yScale.bandwidth();
                 const barCenterY = y + barHeight / 2;
+                const valueK = (d[source] / 1000).toFixed(2);
+                const valueText = valueK === '0.00' ? d[source].toFixed(0) : valueK+ 'k';
+
                 const isHovered = hoveredCountry === d.country;
                 const vivid = sourceColors?.[source];
                 const muted = sourceMutedColors?.[source];
@@ -123,10 +126,10 @@ export const BarPlot = ({
                         textAnchor="start"
                         dominantBaseline="middle"
                         fill="#111827"
-                        fontSize={fontSize.axisInline}
+                        fontSize={isHovered ? fontSize.label:fontSize.axisInline}
                         fontWeight={isHovered ? 'bold' : 'normal'}
                     >
-                        {(d[source] / 1000).toFixed(2)}k
+                        {valueText}
                    
                     </text>
                     </g>

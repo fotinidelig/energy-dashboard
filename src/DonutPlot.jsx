@@ -4,6 +4,7 @@ import { sourceContext } from './DashboardContext.jsx';
 import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
 import { ChartTitle } from './ChartTitle.jsx'
+import { LabelWithBackground } from './LabelWithBackground.jsx'
 import { fontSize } from './theme/typography.js'
 import './theme/typography.css';
 
@@ -135,16 +136,14 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
                             y2={inflexionPoint[1]}
                             stroke={arcFill}
                         />
-                        <text className='text-label'
-                            x={labelPosX + (isRightLabel ? 2 : -2)}
-                            y={inflexionPoint[1]}
-                            textAnchor={textAnchor}
-                            dominantBaseline="middle"
-                            fontSize={fontSize.label}
-                            fill={arcFill}
-                        >
-                            {label}
-                        </text>
+                        <LabelWithBackground
+                          x={labelPosX + (isRightLabel ? 2 : -2)}
+                          y={inflexionPoint[1]}
+                          text={label}
+                          fill={arcFill}
+                          textAnchor={textAnchor}
+                          showBackground
+                        />
                       </>
                     ) : null}
                 </g>
