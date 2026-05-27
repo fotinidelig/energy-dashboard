@@ -9,19 +9,19 @@ import { AxisBottom } from './AxisBottom.jsx'
 import { ChartTitle } from './ChartTitle.jsx'
 import { LabelWithBackground } from './LabelWithBackground.jsx'
 import { Cursor } from './Cursor.jsx'
+import { formatCursorLabel } from './formatCursorLabel.js'
 
 const COMBINED_SOURCE = 'combined';
+const renewableSources = [
+  "hydro",
+  "solar",
+  "wind",
+  "biofuel",
+  "other_renewable"];
 
 export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, setCursorPosition = () => {} }) => {
     const { selectedSource, setSelectedSource } = useContext(sourceContext);
     const [hoveredSource, setHoveredSource] = useState(null);
-
-    const renewableSources = [
-        "hydro",
-        "solar",
-        "wind",
-        "biofuel",
-        "other_renewable"];
     
     const renewableData = useMemo(() => {
         return data.map((d) => ({
@@ -132,9 +132,12 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
       const i = d3.bisector((d) => d.year).center(rows, year);
       const closest = rows[Math.max(0, Math.min(i, rows.length - 1))];
       const v = Number(closest[source]) || 0;
+      const circle = emphasizedSource && renewableSources.includes(emphasizedSource);
       return {
         x: xScale(closest.year),
         y: yScale(v),
+        circle,
+        label: circle ? formatCursorLabel(closest.year, v) : null,
       };
     }, [
       cursorPosition,
@@ -162,6 +165,10 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
           onMouseMove={onMouseMove}
           onMouseLeave={() => setCursorPosition(null)}
         >
+          <rect x={0} y={0} width={innerWidth} height={innerHeight} 
+            // onMouseMove={onMouseMove} 
+            // onMouseLeave={() => setCursorPosition(null)} 
+            visibility={"hidden"} pointerEvents={"all"} />
           {drawOrder.map((source) => {
             const line = lines.find((l) => l.source === source);
             if (!line) return null;
@@ -215,13 +222,15 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
               height={innerHeight}
               x={cursorSnap.x}
               y={cursorSnap.y}
+              circle={cursorSnap.circle}
+              label={cursorSnap.label}
               color={
                 sourceColors?.[
                   emphasizedSource &&
                   renewableSources.includes(emphasizedSource)
                     ? emphasizedSource
-                    : renewableSources[0]
-                ] ?? '#111827'
+                    : "#737270" // dark grey color
+                ] ?? '#737270' // dark grey color
               }
             />
           )}

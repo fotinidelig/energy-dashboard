@@ -178,6 +178,8 @@ function App() {
                     countryData={countryTimeSeries}
                     country={selectedCountry}
                     sourceColors={energySourceToColor}
+                    cursorPosition={cursorPosition}
+                    setCursorPosition={setCursorPosition}
                   />
                 </div>
                 <div className="chart-card">

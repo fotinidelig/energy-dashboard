@@ -8,14 +8,16 @@ import { AxisLeft } from './AxisLeft.jsx'
 import { ChartTitle } from './ChartTitle.jsx'
 import { LabelWithBackground } from './LabelWithBackground.jsx'
 import { Cursor } from './Cursor.jsx'
+import { formatCursorLabel } from './formatCursorLabel.js'
 
 
 const COMBINED_SOURCE = 'combined';
 
-export const AreaPlot = ({ width, height, countryData, sourceColors }) => {
+export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosition, setCursorPosition = () => {} }) => {
     const { selectedSource, setSelectedSource } = useContext(sourceContext);
-    const sources = Object.keys(sourceColors ?? {}).filter(
-      (s) => s !== COMBINED_SOURCE,
+    const sources = useMemo(
+      () => Object.keys(sourceColors ?? {}).filter((s) => s !== COMBINED_SOURCE),
+      [sourceColors],
     );
 
     const [hoveredSource, setHoveredSource] = useState(null);
@@ -99,6 +101,46 @@ export const AreaPlot = ({ width, height, countryData, sourceColors }) => {
       }).filter(Boolean);
     }, [series, xScale, yScale, innerWidth, sourceColors, sourceMutedColors, emphasizedSource]);
 
+    const onMouseMove = (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      setCursorPosition(mouseX);
+    };
+
+    /** Snap line + dot to nearest year on the emphasized stack layer. */
+    const cursorSnap = useMemo(() => {
+      if (cursorPosition == null) return null;
+      const year = xScale.invert(cursorPosition);
+      const source =
+        emphasizedSource && sources.includes(emphasizedSource)
+          ? emphasizedSource
+          : sources[1];
+      const rows = countryData;
+      if (!rows.length || !source) return null;
+      const i = d3.bisector((d) => d.year).center(rows, year);
+      const closest = rows[Math.max(0, Math.min(i, rows.length - 1))];
+      const serie = series.find((s) => s.key === source);
+      if (!serie) return null;
+      const stackPoint = serie.find((p) => p.data.year === closest.year);
+      if (!stackPoint) return null;
+      const circle = emphasizedSource && sources.includes(emphasizedSource);
+      const v = Number(closest[source]) || 0;
+      return {
+        x: xScale(closest.year),
+        y: yScale(stackPoint[1]),
+        circle,
+        label: circle ? formatCursorLabel(closest.year, v) : null,
+      };
+    }, [
+      cursorPosition,
+      xScale,
+      yScale,
+      countryData,
+      series,
+      emphasizedSource,
+      sources,
+    ]);
+
     return (
         <svg width={width} height={height} role="img" aria-label="Energy consumption by source over time stacked area chart"
         overflow={'visible'}>
@@ -108,6 +150,20 @@ export const AreaPlot = ({ width, height, countryData, sourceColors }) => {
                     <AxisBottom xScale={xScale} pixelsPerTick={50} innerHeight={innerHeight} label="Year" />
                 </g>
                 <AxisLeft yScale={yScale} pixelsPerTick={50} innerWidth={innerWidth} label="Energy (TWh)" tickDivisor={1000} />
+            </g>
+            <g
+              transform={`translate(${margin.left}, ${margin.top})`}
+              onMouseMove={onMouseMove}
+              onMouseLeave={() => setCursorPosition(null)}
+            >
+                <rect
+                  x={0}
+                  y={0}
+                  width={innerWidth}
+                  height={innerHeight}
+                  visibility="hidden"
+                  pointerEvents="all"
+                />
                 {drawOrder.map((source) => {
                   const serie = series.find((s) => s.key === source);
                   const label = sourceLabels.find((l) => l.source === source);
@@ -185,6 +241,22 @@ export const AreaPlot = ({ width, height, countryData, sourceColors }) => {
                     </g>
                   );
                 })}
+                {cursorSnap != null && (
+                  <Cursor
+                    height={innerHeight}
+                    x={cursorSnap.x}
+                    y={cursorSnap.y}
+                    circle={cursorSnap.circle}
+                    label={cursorSnap.label}
+                    color={
+                      sourceColors?.[
+                        emphasizedSource && sources.includes(emphasizedSource)
+                          ? emphasizedSource
+                          : "#737270"
+                      ] ?? '#737270'
+                    }
+                  />
+                )}
             </g>
         </svg>
     )
