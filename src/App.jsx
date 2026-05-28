@@ -156,7 +156,10 @@ function App() {
             </div>
             <main className="container app-main">
               <div className="dashboard-header">
-                <h1>Energy dashboard</h1>
+                <div className="dashboard-header__title">
+                <h1>World energy consumption</h1>
+                <h2>Is the world moving towards renewable energy? Let's find out.</h2>
+                </div>
                 <div className="filter-controls">
                   <FilterSelect
                     label="Year"
@@ -174,6 +177,7 @@ function App() {
               </div>
               <div className="dashboard">
                 <div className="chart-card">
+                  <div className="chart-card__title">Energy consumption by source over time</div>
                   <ResponsiveAreaPlot
                     countryData={countryTimeSeries}
                     country={selectedCountry}
@@ -183,6 +187,7 @@ function App() {
                   />
                 </div>
                 <div className="chart-card">
+                  <div className="chart-card__title">Yearly energy mix</div>
                   <ResponsiveDonutPlot
                     data={donutData}
                     year={selectedYear}
@@ -191,6 +196,7 @@ function App() {
                   />
                 </div>
                 <div className="chart-card">
+                  <div className="chart-card__title">Renewable energy over time</div>
                   <ResponsiveLinePlot
                     data={countryTimeSeries}
                     sourceColors={energySourceToColor}
@@ -199,10 +205,13 @@ function App() {
                   />
                 </div>
                 <div className="chart-card">
+                  <div className="chart-card__title">Energy consumption by country (in TWh)</div>
                   <ResponsiveBarPlot
                     data={yearlyData}
                     source={selectedSource}
                     sourceColors={buttonSourceToColor}
+                    year={selectedYear}
+                    country={selectedCountry}
                   />
                 </div>
               </div>

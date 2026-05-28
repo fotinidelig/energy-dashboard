@@ -6,7 +6,6 @@ import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
 import { AxisLeft } from './AxisLeft.jsx'
 import { AxisBottom } from './AxisBottom.jsx'
-import { ChartTitle } from './ChartTitle.jsx'
 import { LabelWithBackground } from './LabelWithBackground.jsx'
 import { Cursor } from './Cursor.jsx'
 import { formatCursorLabel } from './formatCursorLabel.js'
@@ -151,7 +150,6 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
     return (
     <div>
       <svg width={width} height={height} overflow={'visible'}>
-        <ChartTitle width={width}>Renewable energy over time</ChartTitle>
         <g transform={`translate(${[margin.left, margin.top].join(",")})`}>
           <g transform={`translate(0, ${innerHeight})`}>
             <AxisBottom xScale={xScale} pixelsPerTick={50} innerHeight={innerHeight} label="Year" />

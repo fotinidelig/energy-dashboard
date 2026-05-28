@@ -5,7 +5,6 @@ import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
 import { AxisBottom } from './AxisBottom.jsx' 
 import { AxisLeft } from './AxisLeft.jsx' 
-import { ChartTitle } from './ChartTitle.jsx'
 import { LabelWithBackground } from './LabelWithBackground.jsx'
 import { Cursor } from './Cursor.jsx'
 import { formatCursorLabel } from './formatCursorLabel.js'
@@ -144,7 +143,6 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
     return (
         <svg width={width} height={height} role="img" aria-label="Energy consumption by source over time stacked area chart"
         overflow={'visible'}>
-            <ChartTitle width={width}>Energy consumption by source over time</ChartTitle>
             <g transform={`translate(${margin.left}, ${margin.top})`}>
                 <g transform={`translate(0, ${innerHeight})`}>                
                     <AxisBottom xScale={xScale} pixelsPerTick={50} innerHeight={innerHeight} label="Year" />

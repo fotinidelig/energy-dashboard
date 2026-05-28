@@ -9,6 +9,7 @@ export function LabelWithBackground({
   text,
   fill,
   fontSize: fs = fontSize.label,
+  fontWeight = 'normal',
   textAnchor = 'start',
   dominantBaseline = 'middle',
   showBackground = true,
@@ -50,6 +51,7 @@ export function LabelWithBackground({
         dominantBaseline={dominantBaseline}
         fill={fill}
         fontSize={fs}
+        fontWeight={fontWeight}
       >
         {text}
       </text>

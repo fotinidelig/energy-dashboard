@@ -3,7 +3,6 @@ import * as d3 from 'd3';
 import { sourceContext } from './DashboardContext.jsx';
 import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
-import { ChartTitle } from './ChartTitle.jsx'
 import { LabelWithBackground } from './LabelWithBackground.jsx'
 import { fontSize } from './theme/typography.js'
 import './theme/typography.css';
@@ -56,7 +55,6 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
 
   return (
     <svg width={width} height={height} style={{ display: "inline-block" }}>
-      <ChartTitle width={width}>Yearly energy mix</ChartTitle>
       <g transform={`translate(${centerX}, ${centerY})`}>
         {arcs.map((arc, i) => {
             const slice = pie[i]

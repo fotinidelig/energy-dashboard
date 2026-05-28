@@ -1,17 +1,49 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useContext } from "react";
 import * as d3 from 'd3';
 import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
-import { ChartTitle } from './ChartTitle.jsx'
 import { fontSize } from './theme/typography.js'
+import { countryContext } from './DashboardContext.jsx';
+
+
+function formatCenterText(source, hoveredCountry, year, valueText, color = 'red', x, y) {
+  const lineHeight = fontSize.body * 1.25
+  return (
+    <text
+      className="text-cursor"
+      x={x}
+      y={y - 10}
+      textAnchor="middle"
+      dominantBaseline="middle"
+      fill="#111827"
+      fontSize={fontSize.body}
+      pointerEvents="none"
+    >
+      <tspan>Energy consumption (</tspan>
+      <tspan fill={color} fontWeight={800}>{source}</tspan>
+      <tspan>{`) of ${hoveredCountry} in ${year}:`}</tspan>
+      <tspan
+        x={x}
+        dy={lineHeight}
+        fill={color}
+        fontSize={fontSize.body + 5}
+        fontWeight={800}
+      >
+        {valueText} TWh
+      </tspan>
+    </text>
+  );
+}
 
 export const BarPlot = ({
   width,
   height,
   data,
   source = 'combined',
+  year,
   sourceColors,
 }) => {
+    const { selectedCountry, setSelectedCountry } = useContext(countryContext);
 
     const [hoveredCountry, setHoveredCountry] = useState(null);
 
@@ -65,7 +97,6 @@ export const BarPlot = ({
     return (
         <svg width={width} height={height} role="img" aria-label="Energy consumption by country bar chart"
         overflow={'visible'}>
-            <ChartTitle width={width}>Energy consumption by country (in TWh)</ChartTitle>
             <g transform={`translate(${margin.left}, ${margin.top})`}>
             {sortedData.map((d, i) => {
                 const y = yScale(d.country);
@@ -75,7 +106,7 @@ export const BarPlot = ({
                 const barCenterY = y + barHeight / 2;
                 const valueK = (d[source] / 1000).toFixed(2);
                 const valueText = valueK === '0.00' ? d[source].toFixed(0) : valueK+ 'k';
-
+                const preciseValueText = (d[source]).toFixed(2);
                 const isHovered = hoveredCountry === d.country;
                 const vivid = sourceColors?.[source];
                 const muted = sourceMutedColors?.[source];
@@ -95,6 +126,7 @@ export const BarPlot = ({
                     key={d.country}
                     onMouseEnter={() => setHoveredCountry(d.country)}
                     onMouseLeave={() => setHoveredCountry(null)}
+                    onClick={() => setSelectedCountry(d.country)}
                     style={{ cursor: "pointer" }}
                     >
                     <text
@@ -132,6 +164,7 @@ export const BarPlot = ({
                         {valueText}
                    
                     </text>
+                    {isHovered && formatCenterText(source, hoveredCountry, year, preciseValueText, sourceColors?.[source] ?? '#111827', innerWidth/2+40, innerHeight/2+60)}
                     </g>
                 );
                 })}
