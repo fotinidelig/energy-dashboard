@@ -9,6 +9,13 @@ import './theme/typography.css';
 
 const COMBINED_SOURCE = 'combined';
 
+const renewableSources = [
+  "hydro",
+  "solar",
+  "wind",
+  "biofuel",
+  "other_renewable"];
+
 export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
     const { selectedSource, setSelectedSource } = useContext(sourceContext);
 
@@ -20,7 +27,6 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
     const centerY = height / 2;
 
     const total = data.reduce((acc, d) => acc + d.value, 0) || 1;
-    const percentages = data.map((d) => d.value / total);
 
     const [hoveredIndex, setHoveredIndex] = useState(null);
 
@@ -29,12 +35,37 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
       [sourceColors],
     );
 
-    const pie = useMemo(() => {
-      const rows = Array.isArray(data) ? data : []
-      const pieGenerator = d3.pie().value((d) => d.value)
-      return pieGenerator(rows)
-    }, [data])
+    const ORDER = [
+      'coal','oil','gas','nuclear',
+      'hydro','solar','wind','biofuel','other_renewable'
+    ];
+    
+    const rows = useMemo(() => {
+      const safe = Array.isArray(data) ? data : []
+      return [...safe].sort(
+        (a, b) => ORDER.indexOf(a.source) - ORDER.indexOf(b.source),
+      )
+    }, [data]);
 
+    const pie = useMemo(() => {
+      // Important: sort(null) disables value-based reordering so our ORDER is respected.
+      const pieGenerator = d3.pie().value((d) => d.value).sort(null)
+      return pieGenerator(rows)
+    }, [rows])
+
+    const renewablePie = useMemo(() => {
+      return pie.filter((p) => renewableSources.includes(p.data.source))
+    }, [pie])
+
+    const renewableStartAngle = useMemo(() => {
+      return renewablePie[0].startAngle
+    }, [renewablePie])
+
+    const renewableEndAngle = useMemo(() => {
+      return renewablePie[renewablePie.length - 1].endAngle
+    }, [renewablePie])
+
+    // const renewableDataPie = 
     const emphasizedSource = useMemo(() => {
       if (selectedSource !== COMBINED_SOURCE) return selectedSource;
       const hovered = hoveredIndex != null ? pie[hoveredIndex]?.data?.source : null;
@@ -52,6 +83,58 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
         })
         );
     }, [innerRadius, outerRadius, pie]);
+
+    const renewableArc = useMemo(() => {
+      return arcPathGenerator({
+        innerRadius: outerRadius + 7,
+        outerRadius: outerRadius + 11,
+        startAngle: renewableStartAngle,
+        endAngle: renewableEndAngle,
+      })
+    }, [outerRadius, renewableStartAngle, renewableEndAngle])
+
+    const renewableArcFill = '#5F9EA0';
+
+    const renewablePercent = useMemo(() => {
+      return ((renewablePie.reduce((acc, p) => acc + p.value, 0) / total) * 100).toFixed(1)
+    }, [renewablePie, total])
+
+    const renewableCallout = useMemo(() => {
+      if (!renewablePie.length) return null
+
+      const sliceInfo = {
+        innerRadius: outerRadius + 7,
+        outerRadius: outerRadius + 11,
+        startAngle: renewableStartAngle,
+        endAngle: renewableEndAngle,
+      }
+
+      const centroid = arcPathGenerator.centroid(sliceInfo)
+
+      const inflexionInfo = {
+        innerRadius: outerRadius + inflexionPadding + 10,
+        outerRadius: outerRadius + inflexionPadding + 10,
+        startAngle: renewableStartAngle,
+        endAngle: renewableEndAngle,
+      }
+      const inflexionPoint = arcPathGenerator.centroid(inflexionInfo)
+      const isRightLabel = inflexionPoint[0] > 0
+      const labelPosX = inflexionPoint[0] + 12 * (isRightLabel ? 1 : -1)
+
+      return {
+        centroid,
+        inflexionPoint,
+        labelPosX,
+        textAnchor: isRightLabel ? 'start' : 'end',
+      }
+    }, [
+      renewablePie,
+      outerRadius,
+      renewableStartAngle,
+      renewableEndAngle,
+      arcPathGenerator,
+      inflexionPadding,
+    ])
 
   return (
     <svg width={width} height={height} style={{ display: "inline-block" }}>
@@ -79,11 +162,8 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
             const isRightLabel = inflexionPoint[0] > 0;
             const labelPosX = inflexionPoint[0] + 10 * (isRightLabel ? 1 : -1);
             const textAnchor = isRightLabel ? "start" : "end";
-            const label =
-              source +
-              " (" +
-              (percentages[i] * 100).toFixed(1) +
-              "%)";
+            const pct = ((slice.value / total) * 100).toFixed(1)
+            const label = `${source} (${pct}%)`;
 
             const showCallout =
               slice.value > 0 &&
@@ -147,6 +227,41 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
                 </g>
             )
         })}
+        {hoveredIndex == null && renewableCallout ? (
+          <>
+          <path
+            d={renewableArc}
+            fill={renewableArcFill}
+            stroke="#fff"
+            strokeWidth={1}
+          />
+            <line
+              x1={renewableCallout.centroid[0]}
+              y1={renewableCallout.centroid[1]}
+              x2={renewableCallout.inflexionPoint[0]}
+              y2={renewableCallout.inflexionPoint[1]}
+              stroke={renewableArcFill}
+              pointerEvents="none"
+            />
+            <line
+              x1={renewableCallout.inflexionPoint[0]}
+              y1={renewableCallout.inflexionPoint[1]}
+              x2={renewableCallout.labelPosX}
+              y2={renewableCallout.inflexionPoint[1]}
+              stroke={renewableArcFill}
+              pointerEvents="none"
+            />
+            <LabelWithBackground
+              x={renewableCallout.labelPosX + (renewableCallout.textAnchor === 'start' ? 2 : -2)}
+              y={renewableCallout.inflexionPoint[1]}
+              text={`renewables (${renewablePercent}%)`}
+              fill={renewableArcFill}
+              textAnchor={renewableCallout.textAnchor}
+              showBackground
+              pointerEvents="none"
+            />
+          </>
+        ) : null}
         <circle r={innerRadius - 1} fill="white"/>
         <text x={0} y={0} textAnchor="middle" dominantBaseline="middle" fontSize={fontSize.subheader} fontWeight={600}>{year}</text>
       </g>
