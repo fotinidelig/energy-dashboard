@@ -3,7 +3,7 @@ import { fontSize } from './theme/typography.js'
 
 const PRIMARY_TICK_LENGTH = 8;
 const SECONDARY_TICK_LENGTH = 4;
-const MINOR_SUBDIVISIONS = 5;
+const MINOR_SUBDIVISIONS = 4;
 
 function yearsInDomain(xScale, step) {
   const [d0, d1] = xScale.domain();

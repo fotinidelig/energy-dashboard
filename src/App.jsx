@@ -215,7 +215,29 @@ function App() {
                   />
                 </div>
               </div>
+              <p className="dashboard-source">
+                Data source:{' '}
+                <a
+                  href="https://github.com/owid/energy-data"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Our World in Data — Energy Data
+                </a>
+              </p>
             </main>
+            <footer className="footer">
+              <span>&copy; Fotini Deligiannaki</span>
+              <span className="footer__link">
+                <a
+                  href="https://github.com/fotinidelig/energy-dashboard"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View on GitHub
+                </a>
+              </span>
+            </footer>
           </yearContext.Provider>
         </countryContext.Provider>
       </sourceContext.Provider>
