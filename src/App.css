@@ -33,7 +33,7 @@
 .filter-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 10px;
   justify-content: flex-end;
 }
 
@@ -52,7 +52,7 @@
 
 .filter-select__control {
   appearance: none;
-  min-width: 10rem;
+  min-width: 7rem;
   padding: 8px 36px 8px 12px;
   border: 1px solid rgba(47, 45, 74, 0.22);
   border-radius: 10px;
@@ -92,6 +92,7 @@
   justify-content: space-between;
   height: 60%;
   top: 20%;
+  z-index: 60;
 
   font: var(--font-size-body);
 }
@@ -101,7 +102,7 @@
   padding: 6px 12px;
   border-radius: 0 70px 70px 0;
   color: #111827;
-  font-size: var(--font-size-label);
+  font-size: var(--font-size-body);
   line-height: 1.2;
   text-align: left;
   white-space: normal;
@@ -118,9 +119,25 @@
 
 }
 
+.source-button--small {
+  font-size: var(--font-size-label);
+}
+
+.source-button--active {
+  border-top-color: #2f2d4a;
+  border-bottom-color: #2f2d4a;
+  border-right-color: #2f2d4a;
+}
+
 .source-button:hover {
   cursor: pointer;
-  border: 0;
+}
+
+.source-button--active:hover {
+  border-left: 0;
+  border-top-color: #2f2d4a;
+  border-bottom-color: #2f2d4a;
+  border-right-color: #2f2d4a;
 }
 
 .chart-card {
@@ -143,7 +160,34 @@
   width: 100%;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 800px) {
+  .source-button-container {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    height: auto;
+
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 8px 0;
+    background: rgb(183, 191, 198); /* same as page background */
+  }
+
+  .source-button {
+    max-width: none;
+    padding: 6px 10px;
+    border-radius: 999px;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  .source-button--small {
+    font-size: 12px;
+  }
+
   .dashboard {
     grid-template-columns: 1fr;
   }

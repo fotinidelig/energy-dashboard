@@ -128,7 +128,11 @@ function App() {
                   <button
                     key={source}
                     type="button"
-                    className="source-button"
+                    className={[
+                      'source-button',
+                      source === 'other_renewable' ? 'source-button--small' : '',
+                      isActive ? 'source-button--active' : '',
+                    ].join(' ')}
                     onClick={() => {
                       if (source === selectedSource) {
                         setSelectedSource('combined');
@@ -143,10 +147,6 @@ function App() {
                         ? buttonSourceToColor[source]
                         : muteColor(buttonSourceToColor[source]),
                       color: source === 'combined' ? '#fff' : '#000',
-                      fontSize:
-                        source === 'other_renewable'
-                          ? fontSize.label // smaller text for other renewable
-                          : fontSize.body,
                     }}
                   >
                     <SourceButtonLabel source={source} />
