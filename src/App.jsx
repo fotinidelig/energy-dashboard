@@ -1,3 +1,5 @@
+// TODO: Fix data filtering when country with null data is selected
+
 import { useMemo, useState } from 'react';
 
 import './App.css';
@@ -10,7 +12,6 @@ import ResponsiveLinePlot from './LinePlot.jsx';
 import { FilterSelect } from './FilterSelect.jsx';
 import { schemeTableau10 } from "d3";
 import { muteColor } from './muteColor.js';
-import { fontSize } from './theme/typography.js';
 
 const ENERGY_SOURCE_KEYS = [
   "coal",

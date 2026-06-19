@@ -4,6 +4,7 @@ import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
 import { fontSize } from './theme/typography.js'
 import { countryContext } from './DashboardContext.jsx';
+import { sourceContext } from './DashboardContext.jsx';
 
 
 function formatCenterText(source, hoveredCountry, year, valueText, color = 'red', x, y) {
@@ -44,7 +45,6 @@ export const BarPlot = ({
   sourceColors,
 }) => {
     const { selectedCountry, setSelectedCountry } = useContext(countryContext);
-
     const [hoveredCountry, setHoveredCountry] = useState(null);
 
     const safeData = useMemo(() => data ?? [], [data]);
@@ -63,11 +63,14 @@ export const BarPlot = ({
             combined
         }
     });
-
     const sortedData = useMemo(() => {
-      return [...combinedData].sort((a, b) => (b[source] ?? 0) - (a[source] ?? 0));
-    }, [combinedData]);
-    
+      const sourceData = combinedData.filter(d => d[source] !== null).map(d => ({
+        country: d.country,
+        [source]: d[source]
+      }));
+      return [...sourceData].sort((a, b) => b[source] - a[source]);
+    }, [combinedData, source]);
+    console.log("sortedData", sortedData);
     // ToDo: use to construct stacked bar plot
 
     // 2) Chart dimensions and margins.
@@ -98,7 +101,8 @@ export const BarPlot = ({
         <svg width={width} height={height} role="img" aria-label="Energy consumption by country bar chart"
         overflow={'visible'}>
             <g transform={`translate(${margin.left}, ${margin.top})`}>
-            {sortedData.map((d, i) => {
+            {
+            sortedData.map((d, i) => {
                 const y = yScale(d.country);
                 if (y === undefined) return null;
                 const barWidth = xScale(d[source]);
