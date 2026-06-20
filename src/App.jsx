@@ -144,6 +144,7 @@ function App() {
                     onMouseEnter={() => setHoveredSource(source)}
                     onMouseLeave={() => setHoveredSource(null)}
                     style={{
+                      filter: isActive ? `saturate(1)` : `saturate(0.2)`,
                       backgroundColor: isActive
                         ? buttonSourceToColor[source]
                         : muteColor(buttonSourceToColor[source]),

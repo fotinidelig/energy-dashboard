@@ -36,9 +36,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
     );
 
     const [hoveredSource, setHoveredSource] = useState(null);
-    // console.log("countryData", countryData);
     const allNullData = useMemo(() => AllNullOrZeroStackedArea(countryData), [countryData]);
-    console.log("allNullData", allNullData);
 
     // Sidebar selection, or hover when viewing all sources
     const emphasizedSource = useMemo(() => {
@@ -107,17 +105,16 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
         const y = (yScale(last[0]) + yScale(last[1])) / 2;
         const source = serie.key;
         const vivid = sourceColors?.[source];
-        const muted = sourceMutedColors?.[source];
-        const color =
+        const saturation =
           vivid == null
-            ? '#111827'
+            ? 1
             : emphasizedSource == null || emphasizedSource === source
-              ? vivid
-              : muted ?? vivid;
+              ? 1
+              : 0.2;
         const labelX = innerWidth + LABEL_GAP + 4;
-        return { source, x, y, color, labelX };
+        return { source, x, y, vivid, saturation, labelX };
       }).filter(Boolean);
-    }, [series, xScale, yScale, innerWidth, sourceColors, sourceMutedColors, emphasizedSource]);
+    }, [series, xScale, yScale, innerWidth, sourceColors, emphasizedSource]);
 
     const onMouseMove = (e) => {
       const rect = e.currentTarget.getBoundingClientRect();
@@ -200,13 +197,12 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                   if (!serie) return null;
 
                   const vivid = sourceColors?.[source];
-                  const muted = sourceMutedColors?.[source];
-                  const fill =
+                  const saturation =
                     vivid == null
-                      ? '#ccc'
+                      ? 1
                       : emphasizedSource == null || emphasizedSource === source
-                        ? vivid
-                        : muted ?? vivid;
+                        ? 1
+                        : 0.2;
 
                   const useElbow = source === 'other_renewable';
                   const endY = label && useElbow ? label.y - 14 : label?.y;
@@ -230,7 +226,8 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                     >
                       <path
                         d={areaBuilder(serie)}
-                        fill={fill}
+                        fill={vivid}
+                        filter={`saturate(${saturation})`}
                         stroke="#fff"
                         strokeWidth={0.5}
                         strokeLinejoin="round"
@@ -241,7 +238,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                             <path
                               d={leaderPath}
                               fill="none"
-                              stroke={label.color}
+                              stroke={vivid}
                               strokeWidth={1.5}
                               pointerEvents="stroke"
                             />
@@ -251,7 +248,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                               y1={label.y}
                               x2={label.labelX}
                               y2={label.y}
-                              stroke={label.color}
+                              stroke={vivid}
                               strokeWidth={1.5}
                               pointerEvents="stroke"
                             />
@@ -260,7 +257,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                             x={label.labelX + 4}
                             y={endY}
                             text={source.replace(/_/g, ' ')}
-                            fill={label.color}
+                            fill={vivid}
                             showBackground={
                               emphasizedSource === source
                             }

@@ -94,15 +94,14 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
         if (!last || !last[source]) return null;
         const y = yScale(last[source]);
         const vivid = sourceColors?.[source];
-        const muted = sourceMutedColors?.[source];
-        const color =
+        const saturation =
           vivid == null
-          ? '#111827'
+          ? 1
           : emphasizedSource == null || emphasizedSource === source
-            ? vivid
-            : muted ?? vivid;
+            ? 1
+            : 0.2;
         const labelX = innerWidth + 4;
-        return { source, x, y, color, labelX };
+        return { source, x, y, vivid, saturation, labelX };
       }).filter(Boolean);
     }, [lines, xScale, yScale, innerWidth, sourceColors, sourceMutedColors, emphasizedSource, renewableData, xMax]);
 
@@ -190,13 +189,12 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
             if (!line) return null;
             const label = sourceLabels.find((l) => l.source === source);
             const vivid = sourceColors?.[source];
-            const muted = sourceMutedColors?.[source];
-            const stroke =
+            const saturation =
               vivid == null
-                ? '#ccc'
+                ? 1
                 : emphasizedSource == null || emphasizedSource === source
-                  ? vivid
-                  : muted ?? vivid;
+                  ? 1
+                  : 0.2;
 
             return (
               <g
@@ -215,7 +213,8 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
                   d={line.path}
                   fill="none"
                   strokeWidth={3}
-                  stroke={stroke}
+                  stroke={vivid}
+                  filter={`saturate(${saturation})`}
                   pointerEvents="stroke"
                 />
                 {label ? (
@@ -223,7 +222,8 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
                     x={label.labelX + 4}
                     y={label.y}
                     text={source.replace(/_/g, ' ')}
-                    fill={label.color}
+                    fill={vivid}
+                    filter={`saturate(${saturation})`}
                     showBackground={
                       emphasizedSource === source
                     }
@@ -240,14 +240,7 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
               y={cursorSnap.y}
               circle={cursorSnap.circle}
               label={cursorSnap.label}
-              color={
-                sourceColors?.[
-                  emphasizedSource &&
-                  renewableSources.includes(emphasizedSource)
-                    ? emphasizedSource
-                    : "#737270" // dark grey color
-                ] ?? '#737270' // dark grey color
-              }
+              vivid={emphasizedSource ? sourceColors?.[emphasizedSource] : undefined}
             />
           )}
         </g>

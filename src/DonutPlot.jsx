@@ -190,13 +190,12 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
                 (selectedSource !== COMBINED_SOURCE && selectedSource === source));
 
             const vivid = source ? sourceColors?.[source] : undefined;
-            const muted = source ? sourceMutedColors?.[source] : undefined;
-            const arcFill =
+            const saturation =
               vivid == null
-                ? '#ccc'
+                ? 1
                 : emphasizedSource == null || emphasizedSource === source
-                  ? vivid
-                  : muted ?? vivid;
+                  ? 1
+                  : 0.2;
 
             return (
                 <g
@@ -213,7 +212,8 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
                 >
                     <path
                         d={arc}
-                        fill={arcFill}
+                        fill={vivid}
+                        filter={`saturate(${saturation})`}
                         stroke="#fff"
                         strokeWidth={1}
                     />
@@ -224,20 +224,20 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
                             y1={centroid[1]}
                             x2={inflexionPoint[0]}
                             y2={inflexionPoint[1]}
-                            stroke={arcFill}
+                            stroke={vivid}
                         />
                         <line
                             x1={inflexionPoint[0]}
                             y1={inflexionPoint[1]}
                             x2={labelPosX}
                             y2={inflexionPoint[1]}
-                            stroke={arcFill}
+                            stroke={vivid}
                         />
                         <LabelWithBackground
                           x={labelPosX + (isRightLabel ? 2 : -2)}
                           y={inflexionPoint[1]}
                           text={label}
-                          fill={arcFill}
+                          fill={vivid}
                           textAnchor={textAnchor}
                           showBackground
                         />
