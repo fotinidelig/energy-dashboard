@@ -16,8 +16,13 @@ const renewableSources = [
   "biofuel",
   "other_renewable"];
 
+function AllNullOrZeroDonut(data) {
+  return data.every(d => d.value === null || d.value === 0 || d.value === undefined);
+}
+
 export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
     const { selectedSource, setSelectedSource } = useContext(sourceContext);
+    const [hoveredIndex, setHoveredIndex] = useState(null);
 
     const inflexionPadding = 10;
 
@@ -28,12 +33,12 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
 
     const total = data.reduce((acc, d) => acc + d.value, 0) || 1;
 
-    const [hoveredIndex, setHoveredIndex] = useState(null);
-
     const sourceMutedColors = useMemo(
       () => (sourceColors ? muteColor(sourceColors) : undefined),
       [sourceColors],
     );
+
+    const allNullData = useMemo(() => AllNullOrZeroDonut(data), [data]);
 
     const ORDER = [
       'coal','oil','gas','nuclear',
@@ -65,7 +70,6 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
       return renewablePie[renewablePie.length - 1].endAngle
     }, [renewablePie])
 
-    // const renewableDataPie = 
     const emphasizedSource = useMemo(() => {
       if (selectedSource !== COMBINED_SOURCE) return selectedSource;
       const hovered = hoveredIndex != null ? pie[hoveredIndex]?.data?.source : null;
@@ -135,6 +139,21 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
       arcPathGenerator,
       inflexionPadding,
     ])
+
+  if (allNullData) {
+    return (
+      <svg width={width} height={height} style={{ display: "inline-block" }}>
+        <g transform={`translate(${width / 2}, ${height / 2})`}>
+          <text x={0} y={0} 
+          textAnchor="middle" 
+          dominantBaseline="middle" 
+          fontSize={fontSize.subheader} 
+          fill="#A82107"
+          fontWeight={600}>No data available</text>
+        </g>
+      </svg>
+    );
+  }
 
   return (
     <svg width={width} height={height} style={{ display: "inline-block" }}>

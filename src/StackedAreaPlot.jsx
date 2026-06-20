@@ -8,9 +8,25 @@ import { AxisLeft } from './AxisLeft.jsx'
 import { LabelWithBackground } from './LabelWithBackground.jsx'
 import { Cursor } from './Cursor.jsx'
 import { formatCursorLabel } from './formatCursorLabel.js'
-
+import { fontSize } from './theme/typography.js'
 
 const COMBINED_SOURCE = 'combined';
+
+const SOURCES = [
+  "coal",
+  "oil",
+  "gas",
+  "hydro",
+  "nuclear",
+  "solar",
+  "wind",
+  "biofuel",
+  "other_renewable"
+];
+
+function AllNullOrZeroStackedArea(data) {
+  return data.every(d => SOURCES.every(s => d[s] === null || d[s] === 0 || d[s] === undefined));
+}
 
 export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosition, setCursorPosition = () => {} }) => {
     const { selectedSource, setSelectedSource } = useContext(sourceContext);
@@ -20,6 +36,9 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
     );
 
     const [hoveredSource, setHoveredSource] = useState(null);
+    // console.log("countryData", countryData);
+    const allNullData = useMemo(() => AllNullOrZeroStackedArea(countryData), [countryData]);
+    console.log("allNullData", allNullData);
 
     // Sidebar selection, or hover when viewing all sources
     const emphasizedSource = useMemo(() => {
@@ -139,6 +158,19 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
       emphasizedSource,
       sources,
     ]);
+
+    if (allNullData) {
+      return (
+        <svg width={width} height={height} style={{ display: "inline-block" }}>
+          <g transform={`translate(${width / 2}, ${height / 2})`}>
+            <text x={0} y={0} textAnchor="middle" dominantBaseline="middle" 
+            fontSize={fontSize.subheader} 
+            fontWeight={600}
+            fill="#A82107">No data available</text>
+          </g>
+        </svg>
+      );
+    }
 
     return (
         <svg width={width} height={height} role="img" aria-label="Energy consumption by source over time stacked area chart"

@@ -9,6 +9,7 @@ import { AxisBottom } from './AxisBottom.jsx'
 import { LabelWithBackground } from './LabelWithBackground.jsx'
 import { Cursor } from './Cursor.jsx'
 import { formatCursorLabel } from './formatCursorLabel.js'
+import { fontSize } from './theme/typography.js'
 
 const COMBINED_SOURCE = 'combined';
 const renewableSources = [
@@ -18,10 +19,13 @@ const renewableSources = [
   "biofuel",
   "other_renewable"];
 
+function AllNullOrZeroLinePlot(data) {
+  return data.every(d => renewableSources.every(s => d[s] === null || d[s] === 0 || d[s] === undefined));
+}
+
 export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, setCursorPosition = () => {} }) => {
     const { selectedSource, setSelectedSource } = useContext(sourceContext);
     const [hoveredSource, setHoveredSource] = useState(null);
-    
     const renewableData = useMemo(() => {
         return data.map((d) => ({
             year: d.year,
@@ -146,6 +150,20 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
       emphasizedSource,
       renewableSources,
     ]);
+
+    const allNullData = useMemo(() => AllNullOrZeroLinePlot(renewableData), [renewableData]);
+    if (allNullData) {
+      return (
+        <svg width={width} height={height} style={{ display: "inline-block" }}>
+          <g transform={`translate(${width / 2}, ${height / 2})`}>
+            <text x={0} y={0} textAnchor="middle" dominantBaseline="middle" 
+            fontSize={fontSize.subheader} 
+            fontWeight={600}
+            fill="#A82107">No data available</text>
+          </g>
+        </svg>
+      );
+    }
 
     return (
     <div>

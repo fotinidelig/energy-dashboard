@@ -4,8 +4,6 @@ import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
 import { fontSize } from './theme/typography.js'
 import { countryContext } from './DashboardContext.jsx';
-import { sourceContext } from './DashboardContext.jsx';
-
 
 function formatCenterText(source, hoveredCountry, year, valueText, color = 'red', x, y) {
   const lineHeight = fontSize.body * 1.25
@@ -70,7 +68,6 @@ export const BarPlot = ({
       }));
       return [...sourceData].sort((a, b) => b[source] - a[source]);
     }, [combinedData, source]);
-    console.log("sortedData", sortedData);
     // ToDo: use to construct stacked bar plot
 
     // 2) Chart dimensions and margins.
