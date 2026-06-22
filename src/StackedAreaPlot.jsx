@@ -44,11 +44,6 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
       return hoveredSource;
     }, [selectedSource, hoveredSource]);
 
-    const sourceMutedColors = useMemo(
-      () => (sourceColors ? muteColor(sourceColors) : undefined),
-      [sourceColors],
-    );
-
     const stackSeries = d3
         .stack()
         .keys(sources)
@@ -104,15 +99,9 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
         const x = xScale(last.data.year);
         const y = (yScale(last[0]) + yScale(last[1])) / 2;
         const source = serie.key;
-        const vivid = sourceColors?.[source];
-        const saturation =
-          vivid == null
-            ? 1
-            : emphasizedSource == null || emphasizedSource === source
-              ? 1
-              : 0.2;
+        const color = sourceColors?.[source];
         const labelX = innerWidth + LABEL_GAP + 4;
-        return { source, x, y, vivid, saturation, labelX };
+        return { source, x, y, color, opacity, labelX };
       }).filter(Boolean);
     }, [series, xScale, yScale, innerWidth, sourceColors, emphasizedSource]);
 
@@ -145,6 +134,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
         y: yScale(stackPoint[1]),
         circle,
         label: circle ? formatCursorLabel(closest.year, v) : null,
+        source: source,
       };
     }, [
       cursorPosition,
@@ -196,11 +186,9 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                   const label = sourceLabels.find((l) => l.source === source);
                   if (!serie) return null;
 
-                  const vivid = sourceColors?.[source];
+                  const color = sourceColors?.[source];
                   const opacity =
-                    vivid == null
-                      ? 1
-                      : emphasizedSource == null || emphasizedSource === source
+                  emphasizedSource == null || emphasizedSource === source
                         ? 1
                         : hoveredSource === source ? 1 : 0.3;
 
@@ -226,7 +214,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                     >
                       <path
                         d={areaBuilder(serie)}
-                        fill={vivid}
+                        fill={color}
                         opacity={opacity}
                         stroke="#fff"
                         strokeWidth={0.5}
@@ -238,7 +226,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                             <path
                               d={leaderPath}
                               fill="none"
-                              stroke={vivid}
+                              stroke={color}
                               strokeWidth={1.5}
                               pointerEvents="stroke"
                             />
@@ -248,7 +236,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                               y1={label.y}
                               x2={label.labelX}
                               y2={label.y}
-                              stroke={vivid}
+                              stroke={color}
                               strokeWidth={1.5}
                               pointerEvents="stroke"
                             />
@@ -257,7 +245,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                             x={label.labelX + 4}
                             y={endY}
                             text={source.replace(/_/g, ' ')}
-                            fill={vivid}
+                            fill={color}
                             opacity={opacity}
                             showBackground={
                               emphasizedSource === source
@@ -277,11 +265,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                     circle={cursorSnap.circle}
                     label={cursorSnap.label}
                     color={
-                      sourceColors?.[
-                        emphasizedSource && sources.includes(emphasizedSource)
-                          ? emphasizedSource
-                          : "#737270"
-                      ] ?? '#737270'
+                      emphasizedSource ? sourceColors?.[emphasizedSource] : '#737270'
                     }
                   />
                 )}

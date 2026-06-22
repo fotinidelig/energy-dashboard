@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useContext } from "react";
+import { useMemo, useRef, useContext } from "react";
 
 import * as d3 from "d3";
 import { sourceContext } from './DashboardContext.jsx';
@@ -40,10 +40,6 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
       return hoveredSource;
     }, [selectedSource, hoveredSource]);
 
-    const sourceMutedColors = useMemo(
-        () => (sourceColors ? muteColor(sourceColors) : undefined),
-        [sourceColors],
-      );
     // Margins (extra right space for source labels)
     const margin = { top: 44, right: 120, bottom: 40, left: 60 };
     const innerWidth = Math.max(0, (width ?? 0) - margin.left - margin.right);
@@ -80,11 +76,10 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
         return {
           source: s,
           path: lineBuilder(renewableData),
-          color: sourceColors?.[s],
-          mutedColor: sourceMutedColors?.[s],
+          color: sourceColors?.[s]
         };
       });
-    }, [renewableData, renewableSources, xScale, yScale, sourceColors, sourceMutedColors]);
+    }, [renewableData, renewableSources, xScale, yScale, sourceColors]);
 
     const sourceLabels = useMemo(() => {
       const last = renewableData[renewableData.length - 1];
@@ -93,17 +88,15 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
         const source = line.source;
         if (!last || !last[source]) return null;
         const y = yScale(last[source]);
-        const vivid = sourceColors?.[source];
+        const color = sourceColors?.[source];
         const opacity =
-          vivid == null
-          ? 1
-          : emphasizedSource == null || emphasizedSource === source
+          emphasizedSource == null || emphasizedSource === source
             ? 1 :
             hoveredSource === source ? 1 : 0.3;
         const labelX = innerWidth + 4;
-        return { source, x, y, vivid, opacity, labelX };
+        return { source, x, y, color, opacity, labelX };
       }).filter(Boolean);
-    }, [lines, xScale, yScale, innerWidth, sourceColors, sourceMutedColors, emphasizedSource, renewableData, xMax]);
+    }, [lines, xScale, yScale, innerWidth, sourceColors, emphasizedSource, renewableData, xMax]);
 
     const drawOrder = useMemo(() => {
       if (!emphasizedSource || !renewableSources.includes(emphasizedSource)) {
@@ -140,6 +133,7 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
         y: yScale(v),
         circle,
         label: circle ? formatCursorLabel(closest.year, v) : null,
+        source: source,
       };
     }, [
       cursorPosition,
@@ -180,17 +174,15 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
           onMouseMove={onMouseMove}
           onMouseLeave={() => setCursorPosition(null)}
         >
-          <rect x={0} y={0} width={innerWidth} height={innerHeight} 
-            // onMouseMove={onMouseMove} 
-            // onMouseLeave={() => setCursorPosition(null)} 
+          <rect x={0} y={0} width={innerWidth} height={innerHeight}
             visibility={"hidden"} pointerEvents={"all"} />
           {drawOrder.map((source) => {
             const line = lines.find((l) => l.source === source);
             if (!line) return null;
             const label = sourceLabels.find((l) => l.source === source);
-            const vivid = sourceColors?.[source];
+            const color = sourceColors?.[source];
             const opacity =
-              vivid == null || emphasizedSource == null || emphasizedSource === source  
+              emphasizedSource == null || emphasizedSource === source  
                 ? 1 :
                 hoveredSource === source ? 1 : 0.3;
 
@@ -211,7 +203,7 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
                   d={line.path}
                   fill="none"
                   strokeWidth={3}
-                  stroke={vivid}
+                  stroke={color}
                   opacity={opacity}
                   pointerEvents="stroke"
                 />
@@ -220,7 +212,7 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
                     x={label.labelX + 4}
                     y={label.y}
                     text={source.replace(/_/g, ' ')}
-                    fill={vivid}
+                    fill={color}
                     opacity={opacity}
                     showBackground={
                       emphasizedSource === source
@@ -238,7 +230,7 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
               y={cursorSnap.y}
               circle={cursorSnap.circle}
               label={cursorSnap.label}
-              vivid={emphasizedSource ? sourceColors?.[emphasizedSource] : undefined}
+              color={emphasizedSource ? sourceColors?.[emphasizedSource] : '#737270'}
             />
           )}
         </g>
