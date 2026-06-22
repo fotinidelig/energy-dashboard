@@ -181,7 +181,7 @@ export const BarPlot = ({
                         {valueText}
                    
                     </text>
-                    {hoveredCountry === d.country && formatCenterText(source, hoveredCountry, year, preciseValueText, sourceColors?.[source] ?? '#111827', innerWidth/2+40, innerHeight/2+60)}
+                    {(hoveredCountry === d.country || selectedCountry === d.country) && formatCenterText(source, hoveredCountry, year, preciseValueText, sourceColors?.[source] ?? '#111827', innerWidth/2+40, innerHeight/2+60)}
                     </g>
                 );
                 })}
