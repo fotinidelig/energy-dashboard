@@ -100,10 +100,14 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
         const y = (yScale(last[0]) + yScale(last[1])) / 2;
         const source = serie.key;
         const color = sourceColors?.[source];
+        const opacity =
+          emphasizedSource == null || emphasizedSource === source
+            ? 1 :
+            hoveredSource === source ? 1 : 0.3;
         const labelX = innerWidth + LABEL_GAP + 4;
         return { source, x, y, color, opacity, labelX };
       }).filter(Boolean);
-    }, [series, xScale, yScale, innerWidth, sourceColors, emphasizedSource]);
+    }, [series, xScale, yScale, innerWidth, sourceColors, emphasizedSource, hoveredSource]);
 
     const onMouseMove = (e) => {
       const rect = e.currentTarget.getBoundingClientRect();
