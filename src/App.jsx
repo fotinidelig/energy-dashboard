@@ -80,12 +80,10 @@ function SourceButtonLabel({ source }) {
 }
 
 function App() {
-  const [hoveredSource, setHoveredSource] = useState(null)
-  const [selectedSource, setSelectedSource] = useState('combined')
-  const [selectedCountry, setSelectedCountry] = useState('World')
-  const [selectedYear, setSelectedYear] = useState(2024)  
-  const [cursorPosition, setCursorPosition] = useState(null);
-
+  const [hoveredSource, setHoveredSource] = useState(null);
+  const [selectedSource, setSelectedSource] = useState('combined');
+  const [selectedCountry, setSelectedCountry] = useState('World');
+  const [selectedYear, setSelectedYear] = useState(2024);  
 
   const yearlyData = useMemo(
     () => countryData.filter((d) => d.year === selectedYear),
@@ -184,8 +182,6 @@ function App() {
                     countryData={countryTimeSeries}
                     country={selectedCountry}
                     sourceColors={energySourceToColor}
-                    cursorPosition={cursorPosition}
-                    setCursorPosition={setCursorPosition}
                   />
                 </div>
                 <div className="chart-card">
@@ -202,8 +198,6 @@ function App() {
                   <ResponsiveLinePlot
                     data={countryTimeSeries}
                     sourceColors={energySourceToColor}
-                    cursorPosition={cursorPosition}
-                    setCursorPosition={setCursorPosition}
                   />
                 </div>
                 <div className="chart-card">

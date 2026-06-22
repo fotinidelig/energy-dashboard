@@ -27,8 +27,9 @@ function AllNullOrZeroStackedArea(data) {
   return data.every(d => SOURCES.every(s => d[s] === null || d[s] === 0 || d[s] === undefined));
 }
 
-export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosition, setCursorPosition = () => {} }) => {
+export const AreaPlot = ({ width, height, countryData, sourceColors }) => {
     const { selectedSource, setSelectedSource } = useContext(sourceContext);
+    const [cursorPosition, setCursorPosition] = useState(null);
     const sources = useMemo(
       () => Object.keys(sourceColors ?? {}).filter((s) => s !== COMBINED_SOURCE),
       [sourceColors],

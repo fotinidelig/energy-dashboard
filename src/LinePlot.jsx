@@ -22,7 +22,8 @@ function AllNullOrZeroLinePlot(data) {
   return data.every(d => renewableSources.every(s => d[s] === null || d[s] === 0 || d[s] === undefined));
 }
 
-export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, setCursorPosition = () => {} }) => {
+export const LinePlot = ({ width, height, data, sourceColors }) => {
+    const [cursorPosition, setCursorPosition] = useState(null);
     const { selectedSource, setSelectedSource } = useContext(sourceContext);
     const [hoveredSource, setHoveredSource] = useState(null);
     const renewableData = useMemo(() => {
