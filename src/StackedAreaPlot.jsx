@@ -2,12 +2,11 @@ import { useMemo, useRef, useState, useContext } from "react";
 import * as d3 from "d3";
 import { sourceContext } from './DashboardContext.jsx';
 import { useDimensions } from './use-dimensions'
-import { muteColor } from './muteColor.js'
 import { AxisBottom } from './AxisBottom.jsx' 
 import { AxisLeft } from './AxisLeft.jsx' 
 import { LabelWithBackground } from './LabelWithBackground.jsx'
 import { Cursor } from './Cursor.jsx'
-import { formatCursorLabel } from './formatCursorLabel.js'
+import { buildCursorLabelShort, buildCursorLabelMulti } from './formatCursorLabel.js'
 import { fontSize } from './theme/typography.js'
 
 const COMBINED_SOURCE = 'combined';
@@ -127,18 +126,31 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
       if (!rows.length || !source) return null;
       const i = d3.bisector((d) => d.year).center(rows, year);
       const closest = rows[Math.max(0, Math.min(i, rows.length - 1))];
-      const serie = series.find((s) => s.key === source);
-      if (!serie) return null;
-      const stackPoint = serie.find((p) => p.data.year === closest.year);
-      if (!stackPoint) return null;
       const circle = emphasizedSource && sources.includes(emphasizedSource);
-      const v = Number(closest[source]) || 0;
+
+      let label, x, y;
+      if (!circle) {
+        const values = sources.map((s) => Number(closest[s]) || 0);
+        label = buildCursorLabelMulti(closest.year, values, sources);
+        x = xScale(closest.year);
+        y = yScale(d3.mean(values));
+      } else {
+        const serie = series.find((s) => s.key === source);
+        if (!serie) return null;
+        const stackPoint = serie.find((p) => p.data.year === closest.year);
+        if (!stackPoint) return null;
+        const v = Number(closest[source]) || 0;
+        label = buildCursorLabelShort(closest.year, v, source);
+        x = xScale(closest.year);
+        y = yScale(stackPoint[1]);
+      }
+
       return {
-        x: xScale(closest.year),
-        y: yScale(stackPoint[1]),
+        x,
+        y,
         circle,
-        label: circle ? formatCursorLabel(closest.year, v) : null,
-        source: source,
+        label,
+        source,
       };
     }, [
       cursorPosition,
@@ -268,6 +280,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                     y={cursorSnap.y}
                     circle={cursorSnap.circle}
                     label={cursorSnap.label}
+                    sourceColors={sourceColors}
                     color={
                       emphasizedSource ? sourceColors?.[emphasizedSource] : '#737270'
                     }

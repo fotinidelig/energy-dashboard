@@ -32,7 +32,7 @@ export function LabelWithBackground({
         ? y - padY
         : y - fs - padY;
   return (
-    <g pointerEvents={pointerEvents}>
+    <g pointerEvents={pointerEvents} overflow="visible">
       {showBackground ? (
         <rect
           x={rectX}

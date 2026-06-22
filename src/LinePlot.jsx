@@ -3,12 +3,11 @@ import { useMemo, useRef, useContext, useState } from "react";
 import * as d3 from "d3";
 import { sourceContext } from './DashboardContext.jsx';
 import { useDimensions } from './use-dimensions'
-import { muteColor } from './muteColor.js'
 import { AxisLeft } from './AxisLeft.jsx'
 import { AxisBottom } from './AxisBottom.jsx'
 import { LabelWithBackground } from './LabelWithBackground.jsx'
 import { Cursor } from './Cursor.jsx'
-import { formatCursorLabel } from './formatCursorLabel.js'
+import { buildCursorLabelShort, buildCursorLabelMulti } from './formatCursorLabel.js'
 import { fontSize } from './theme/typography.js'
 
 const COMBINED_SOURCE = 'combined';
@@ -125,15 +124,27 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
       const rows = renewableData;
       if (!rows.length) return null;
       const i = d3.bisector((d) => d.year).center(rows, year);
-      const closest = rows[Math.max(0, Math.min(i, rows.length - 1))];
-      const v = Number(closest[source]) || 0;
+      const closest = rows[Math.max(0, Math.min(i, rows.length - 1))];      
       const circle = emphasizedSource && renewableSources.includes(emphasizedSource);
+
+      let label, x, y;
+      if (!circle) {
+        const values = renewableSources.map((s) => Number(closest[s]) || 0);
+        label = buildCursorLabelMulti(closest.year, values, renewableSources);
+        x = xScale(closest.year);
+        y = yScale(d3.mean(values));
+      } else {
+        const v = Number(closest[source]) || 0;
+        label = buildCursorLabelShort(closest.year, v, source);
+        x = xScale(closest.year);
+        y = yScale(v);
+      }
       return {
-        x: xScale(closest.year),
-        y: yScale(v),
+        x,
+        y,
         circle,
-        label: circle ? formatCursorLabel(closest.year, v) : null,
-        source: source,
+        label,
+        source,
       };
     }, [
       cursorPosition,
@@ -230,6 +241,7 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
               y={cursorSnap.y}
               circle={cursorSnap.circle}
               label={cursorSnap.label}
+              sourceColors={sourceColors}
               color={emphasizedSource ? sourceColors?.[emphasizedSource] : '#737270'}
             />
           )}
