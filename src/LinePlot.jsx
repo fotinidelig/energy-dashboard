@@ -94,14 +94,14 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
         if (!last || !last[source]) return null;
         const y = yScale(last[source]);
         const vivid = sourceColors?.[source];
-        const saturation =
+        const opacity =
           vivid == null
           ? 1
           : emphasizedSource == null || emphasizedSource === source
-            ? 1
-            : 0.2;
+            ? 1 :
+            hoveredSource === source ? 1 : 0.3;
         const labelX = innerWidth + 4;
-        return { source, x, y, vivid, saturation, labelX };
+        return { source, x, y, vivid, opacity, labelX };
       }).filter(Boolean);
     }, [lines, xScale, yScale, innerWidth, sourceColors, sourceMutedColors, emphasizedSource, renewableData, xMax]);
 
@@ -189,12 +189,10 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
             if (!line) return null;
             const label = sourceLabels.find((l) => l.source === source);
             const vivid = sourceColors?.[source];
-            const saturation =
-              vivid == null
-                ? 1
-                : emphasizedSource == null || emphasizedSource === source
-                  ? 1
-                  : 0.2;
+            const opacity =
+              vivid == null || emphasizedSource == null || emphasizedSource === source  
+                ? 1 :
+                hoveredSource === source ? 1 : 0.3;
 
             return (
               <g
@@ -214,7 +212,7 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
                   fill="none"
                   strokeWidth={3}
                   stroke={vivid}
-                  filter={`saturate(${saturation})`}
+                  opacity={opacity}
                   pointerEvents="stroke"
                 />
                 {label ? (
@@ -223,7 +221,7 @@ export const LinePlot = ({ width, height, data, sourceColors, cursorPosition, se
                     y={label.y}
                     text={source.replace(/_/g, ' ')}
                     fill={vivid}
-                    filter={`saturate(${saturation})`}
+                    opacity={opacity}
                     showBackground={
                       emphasizedSource === source
                     }

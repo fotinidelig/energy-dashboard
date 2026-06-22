@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useContext } from "react";
+import { useMemo, useRef, useState, useContext, useEffect } from "react";
 import * as d3 from 'd3';
 import { useDimensions } from './use-dimensions'
 import { muteColor } from './muteColor.js'
@@ -45,12 +45,26 @@ export const BarPlot = ({
     const { selectedCountry, setSelectedCountry } = useContext(countryContext);
     const [hoveredCountry, setHoveredCountry] = useState(null);
 
-    const safeData = useMemo(() => data ?? [], [data]);
+    // Clear local hover when country changes elsewhere (e.g. filter dropdown).
+    useEffect(() => {
+      setHoveredCountry(null);
+    }, [selectedCountry]);
 
-    const sourceMutedColors = useMemo(
-      () => (sourceColors ? muteColor(sourceColors) : undefined),
-      [sourceColors],
-    );
+    function handleClick(country) {
+      setSelectedCountry(selectedCountry === country ? 'World' : country);
+    }
+
+    function handleMouseEnter(country) {
+      if (selectedCountry !== 'World') return;
+      setHoveredCountry(country);
+    }
+
+    function handleMouseLeave() {
+      if (selectedCountry !== 'World') return;
+      setHoveredCountry(null);
+    }
+
+    const safeData = useMemo(() => data ?? [], [data]);
 
     // Sort once so bars render from highest to lowest (top to bottom).
     // create new column in data called 'total' summing up all energy sources
@@ -108,26 +122,18 @@ export const BarPlot = ({
                 const valueK = (d[source] / 1000).toFixed(2);
                 const valueText = valueK === '0.00' ? d[source].toFixed(0) : valueK+ 'k';
                 const preciseValueText = (d[source]).toFixed(2);
-                const isHovered = hoveredCountry === d.country;
-                const vivid = sourceColors?.[source];
-                const muted = sourceMutedColors?.[source];
-                const barFill =
-                  vivid != null && muted != null
-                    ? hoveredCountry === null 
-                      ? vivid
-                      : isHovered
-                        ? vivid
-                        : muted
-                    : isHovered
-                      ? "#2F2D4A"
-                      : "#7774aa";
+                const emphasizedCountry =
+                  selectedCountry !== 'World' ? selectedCountry : hoveredCountry;
+                const isEmphasized = emphasizedCountry === d.country;
+                const barFill = sourceColors?.[source];
+                const opacity = emphasizedCountry ? (isEmphasized ? 1 : 0.3) : 1;
 
                 return (
                     <g
                     key={d.country}
-                    onMouseEnter={() => setHoveredCountry(d.country)}
-                    onMouseLeave={() => setHoveredCountry(null)}
-                    onClick={() => setSelectedCountry(d.country)}
+                    onMouseEnter={() => handleMouseEnter(d.country)}
+                    onMouseLeave={() => handleMouseLeave()}
+                    onClick={() => handleClick(d.country)}
                     style={{ cursor: "pointer" }}
                     >
                     <text
@@ -137,12 +143,19 @@ export const BarPlot = ({
                         dominantBaseline="middle"
                         fill="#111827"
                         fontSize={fontSize.label}
-                        fontWeight={isHovered ? 'bold' : 'normal'}
+                        fontWeight={isEmphasized ? 'bold' : 'normal'}
                     >
                         {d.country}
                     </text>
-
-                    <rect
+                    <g className="bar">
+                      <rect
+                        x={0}
+                        y={y}
+                        width={xScale(xMax)}
+                        height={yScale.step()}
+                        fill="transparent"
+                      />
+                      <rect
                         x={0}
                         y={y}
                         width={barWidth}
@@ -150,8 +163,11 @@ export const BarPlot = ({
                         className="barplot-bar"
                         style={{ animationDelay: `${i * 30}ms` }}
                         fill={barFill}
+                        opacity={opacity}
                         rx={3}
-                    />
+                        pointerEvents="none"
+                      />
+                      </g>
 
                     <text
                         x={barWidth + 8}
@@ -159,13 +175,13 @@ export const BarPlot = ({
                         textAnchor="start"
                         dominantBaseline="middle"
                         fill="#111827"
-                        fontSize={isHovered ? fontSize.label:fontSize.axisInline}
-                        fontWeight={isHovered ? 'bold' : 'normal'}
+                        fontSize={isEmphasized ? fontSize.label : fontSize.axisInline}
+                        fontWeight={isEmphasized ? 'bold' : 'normal'}
                     >
                         {valueText}
                    
                     </text>
-                    {isHovered && formatCenterText(source, hoveredCountry, year, preciseValueText, sourceColors?.[source] ?? '#111827', innerWidth/2+40, innerHeight/2+60)}
+                    {hoveredCountry === d.country && formatCenterText(source, hoveredCountry, year, preciseValueText, sourceColors?.[source] ?? '#111827', innerWidth/2+40, innerHeight/2+60)}
                     </g>
                 );
                 })}

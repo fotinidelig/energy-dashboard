@@ -197,12 +197,12 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                   if (!serie) return null;
 
                   const vivid = sourceColors?.[source];
-                  const saturation =
+                  const opacity =
                     vivid == null
                       ? 1
                       : emphasizedSource == null || emphasizedSource === source
                         ? 1
-                        : 0.2;
+                        : hoveredSource === source ? 1 : 0.3;
 
                   const useElbow = source === 'other_renewable';
                   const endY = label && useElbow ? label.y - 14 : label?.y;
@@ -227,7 +227,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                       <path
                         d={areaBuilder(serie)}
                         fill={vivid}
-                        filter={`saturate(${saturation})`}
+                        opacity={opacity}
                         stroke="#fff"
                         strokeWidth={0.5}
                         strokeLinejoin="round"
@@ -258,6 +258,7 @@ export const AreaPlot = ({ width, height, countryData, sourceColors, cursorPosit
                             y={endY}
                             text={source.replace(/_/g, ' ')}
                             fill={vivid}
+                            opacity={opacity}
                             showBackground={
                               emphasizedSource === source
                             }

@@ -190,12 +190,12 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
                 (selectedSource !== COMBINED_SOURCE && selectedSource === source));
 
             const vivid = source ? sourceColors?.[source] : undefined;
-            const saturation =
+            const opacity =
               vivid == null
                 ? 1
                 : emphasizedSource == null || emphasizedSource === source
                   ? 1
-                  : 0.2;
+                  : 0.3;
 
             return (
                 <g
@@ -213,7 +213,7 @@ export const DonutPlot = ({ width, height, data, year, sourceColors }) => {
                     <path
                         d={arc}
                         fill={vivid}
-                        filter={`saturate(${saturation})`}
+                        opacity={opacity}
                         stroke="#fff"
                         strokeWidth={1}
                     />
