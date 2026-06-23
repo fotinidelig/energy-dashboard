@@ -70,7 +70,7 @@ export function CursorLabel({
         fill="#111827"
       >
         {header ? (
-          <tspan x={x} dy={lineIndex++ === 0 ? 0 : lineHeight}>
+          <tspan x={x} dy={lineIndex++ === 0 ? 0 : lineHeight} fontWeight={700}>
             {header}
           </tspan>
         ) : null}

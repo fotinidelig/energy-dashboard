@@ -211,13 +211,22 @@ export const LinePlot = ({ width, height, data, sourceColors }) => {
                 }
                 style={{ cursor: 'pointer' }}
               >
+                {/* {add line with larger stroke to avoid flickering when hovering over the line} */}
+                <path
+                  d={line.path}
+                  fill="none"
+                  strokeWidth={8}
+                  stroke={color}
+                  opacity={0.1}
+                  pointerEvents="stroke"
+                />
                 <path
                   d={line.path}
                   fill="none"
                   strokeWidth={3}
                   stroke={color}
                   opacity={opacity}
-                  pointerEvents="stroke"
+                  pointerEvents="none"
                 />
                 {label ? (
                   <LabelWithBackground
