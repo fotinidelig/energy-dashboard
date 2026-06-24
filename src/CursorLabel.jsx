@@ -46,13 +46,16 @@ export function CursorLabel({
         ? x - textWidth / 2 - padX
         : x - padX;
 
+  // Explicit per-line y + middle baseline — Safari misaligns dominantBaseline="hanging".
+  const lineY = (index) => y + padY + fs / 2 + index * lineHeight;
+
   let lineIndex = 0;
 
   return (
     <g pointerEvents={pointerEvents} overflow="visible">
       <rect
         x={rectX}
-        y={y - padY}
+        y={y}
         width={textWidth + padX * 2}
         height={textHeight + padY * 2}
         fill="white"
@@ -62,24 +65,27 @@ export function CursorLabel({
       />
       <text
         className="text-cursor"
-        x={x}
-        y={y}
         textAnchor={textAnchor}
-        dominantBaseline="hanging"
         fontSize={fs}
         fill="#111827"
       >
         {header ? (
-          <tspan x={x} dy={lineIndex++ === 0 ? 0 : lineHeight} fontWeight={700}>
+          <tspan
+            x={x}
+            y={lineY(lineIndex++)}
+            dominantBaseline="middle"
+            fontWeight={700}
+          >
             {header}
           </tspan>
         ) : null}
         {rows.map(({ source, rest }) => {
           const sourceLabel = source.replace(/_/g, ' ');
           const color = sourceColors?.[source] ?? '#111827';
-          const dy = lineIndex++ === 0 ? 0 : lineHeight;
+          const rowY = lineY(lineIndex++);
+
           return (
-            <tspan key={source} x={x} dy={dy}>
+            <tspan key={source} x={x} y={rowY} dominantBaseline="middle">
               <tspan fontWeight={700} fill={color}>
                 {sourceLabel}
               </tspan>
